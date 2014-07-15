@@ -3,35 +3,38 @@
  */
 package cn.lucifer.demo.clazz;
 
+import org.junit.Test;
+
 import com.google.gson.Gson;
 
 /**
  * @author Lucifer
  * 
  */
-public class Test {
+public class SomeTest {
 
 	/**
 	 * @param args
 	 */
-	public static void main(String[] args) {
-//		trace(new B());
-//		clone(new B());
+	@Test
+	public void testMain() {
+		// trace(new B());
+		// clone(new B());
 		System.out.println(new B());
-//		System.out.println(new AS().a);
+		// System.out.println(new AS().a);
 	}
 
-	public static void trace(A a) {
+	public void trace(A a) {
 		Class clazz = a.getClass();
 		System.out.println(clazz);
 	}
-	
-	public static void clone(A a){
+
+	public void clone(A a) {
 		try {
 			System.out.println(new Gson().toJson(a.clone()));
 		} catch (CloneNotSupportedException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 }

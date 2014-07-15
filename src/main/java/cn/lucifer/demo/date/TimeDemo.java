@@ -21,7 +21,7 @@ public class TimeDemo {
 	DateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
 	@Test
-	public void mainTest() throws ParseException {
+	public void testMain() throws ParseException {
 		String timeString = "2011-07-02 15:06:54.772";
 		Date date = timeFormat.parse(timeString);
 		System.out.println(date.getTime());

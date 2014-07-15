@@ -16,7 +16,7 @@ import cn.lucifer.util.DateUtils;
  */
 public class CollTest {
 	@Test
-	public void mainTest(String[] args) {
+	public void testMain(String[] args) {
 		Date date = DateUtils.getTime("1987-07-14 00:00:00");
 		System.out.println(getAstro(date));
 	}

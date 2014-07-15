@@ -19,9 +19,9 @@ public class FileTest {
 	@Test
 	public void testMain() throws IOException {
 		System.out.println(System.getProperty("user.dir"));
-		System.out.println(new File("D:/dev/workspace/Demo").getParent());
-		System.out.println(new File("D:/dev/workspace/Demo").getName());
-		System.out.println(DigestUtils.md5Hex(new FileInputStream(
-				"C:/test/Cover1.apk")));
+		System.out.println(new File("D:/workspace/lucifer_test").getParent());
+		System.out.println(new File("D:/workspace/lucifer_test").getName());
+//		System.out.println(DigestUtils.md5Hex(new FileInputStream(
+//				"C:/test/Cover1.apk")));
 	}
 }

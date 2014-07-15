@@ -25,7 +25,7 @@ import com.google.gson.Gson;
 
 public class QQDownloadDemo {
 
-	private static final String path = "resource/down.json";
+	private static final String path = "resource/qq_down.json";
 
 	/**
 	 * 腾讯高清新闻相册可用
@@ -85,7 +85,7 @@ public class QQDownloadDemo {
 		}
 	}
 
-	private final String source_path = "resource/down2.json";
+	private final String source_path = "resource/qq_down2.json";
 
 	@Test
 	public void main4mshow() throws IOException {
