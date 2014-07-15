@@ -21,7 +21,7 @@ public class FileTest {
 		System.out.println(System.getProperty("user.dir"));
 		System.out.println(new File("D:/workspace/lucifer_test").getParent());
 		System.out.println(new File("D:/workspace/lucifer_test").getName());
-//		System.out.println(DigestUtils.md5Hex(new FileInputStream(
-//				"C:/test/Cover1.apk")));
+		System.out.println(DigestUtils.md5Hex(new FileInputStream(
+				"resource/qq_down.json")));
 	}
 }
