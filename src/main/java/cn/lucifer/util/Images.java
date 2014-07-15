@@ -25,7 +25,8 @@ public class Images {
 	 *            The new width (or -1 to proportionally resize)
 	 * @param h
 	 *            The new height (or -1 to proportionally resize)
-	 * @param Image.scaling
+	 * @param Image
+	 *            .scaling
 	 */
 	public static void resize(File originalImage, File to, int w, int h,
 			int scalingType) {
@@ -129,4 +130,85 @@ public class Images {
 		}
 
 	}
+
+	/**
+	 * Resize an image
+	 * 
+	 * @param originalImage
+	 *            The image file
+	 * @param to
+	 *            The destination file
+	 * @param w
+	 *            The new width (or -1 to proportionally resize)
+	 * @param h
+	 *            The new height (or -1 to proportionally resize)
+	 */
+	public static void resize4Square(File originalImage, File to, int w) {
+		try {
+			BufferedImage source = ImageIO.read(originalImage);
+			int owidth = source.getWidth();
+			int oheight = source.getHeight();
+			double ratio = (double) owidth / oheight;
+
+			int rwidth, rheight;
+			int x = 0, y = 0;
+			if (owidth > oheight) {
+				if (owidth >= w) {
+					rwidth = w;
+					rheight = (int) (w / ratio);
+					x = 0;
+					y = (w - rheight) >> 1;
+				} else {
+					rwidth = owidth;
+					rheight = oheight;
+					x = (w - rwidth) >> 1;
+					y = (w - rheight) >> 1;
+				}
+			} else {
+				if (oheight >= w) {
+					rwidth = (int) (w / ratio);
+					rheight = w;
+					x = (w - rwidth) >> 1;
+					y = 0;
+				} else {
+					rwidth = owidth;
+					rheight = oheight;
+					x = (w - rwidth) >> 1;
+					y = (w - rheight) >> 1;
+				}
+			}
+
+			String mimeType = "image/jpeg";
+			if (to.getName().endsWith(".png")) {
+				mimeType = "image/png";
+			}
+			if (to.getName().endsWith(".gif")) {
+				mimeType = "image/gif";
+			}
+
+			// out
+			BufferedImage dest = new BufferedImage(w, w,
+					BufferedImage.TYPE_INT_RGB);
+			Image srcSized = source.getScaledInstance(rwidth, rheight,
+					Image.SCALE_SMOOTH);
+			Graphics graphics = dest.getGraphics();
+			graphics.setColor(Color.WHITE);
+			graphics.fillRect(0, 0, w, w);
+			graphics.drawImage(srcSized, x, y, null);
+			ImageWriter writer = ImageIO.getImageWritersByMIMEType(mimeType)
+					.next();
+			ImageWriteParam params = writer.getDefaultWriteParam();
+			FileImageOutputStream toFs = new FileImageOutputStream(to);
+			writer.setOutput(toFs);
+			IIOImage image = new IIOImage(dest, null, null);
+			writer.write(null, image, params);
+			toFs.flush();
+			toFs.close();
+
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+
+	}
+
 }
