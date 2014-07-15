@@ -14,13 +14,16 @@ import java.io.OutputStreamWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.junit.Test;
+
 /**
  * @author Lucifer
  * 
  */
 public class FormatNumber {
 
-	public static void main(String[] args) throws IOException {
+	@Test
+	public void main() throws IOException {
 		String regex = "[０-９]{1,3}";
 		Pattern pattern = Pattern.compile(regex);
 		String path = "E:/books/紫屋魔恋/长篇/";
@@ -53,7 +56,7 @@ public class FormatNumber {
 	/**
 	 * @param args
 	 */
-	public static void yrasl(String[] args) throws IOException {
+	public void yrasl(String[] args) throws IOException {
 		String regexJi = "异人傲世录第[一|二|三|四|五|六|七|八|九|十|\\d]{1,3}集";
 		String regexZhang = "第[一|二|三|四|五|六|七|八|九|十|\\d]{1,3}[章|节]";
 

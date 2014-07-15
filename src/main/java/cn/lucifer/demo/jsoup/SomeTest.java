@@ -15,21 +15,24 @@ import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.Comparator;
 
+import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.junit.Test;
 
 /**
  * @author Lucifer
  * 
  */
-public class Test {
+public class SomeTest {
 
-	public static void main(String[] args) throws IOException {
+	@Test
+	public void testMain() throws IOException {
 		String basePath = "E:/books/资治通鉴/content";
 		// File file = new File(basePath + "/zztj_001.htm");
-		
+
 		// String resource = read(file);
 
 		File outFile = new File(basePath + System.currentTimeMillis() + ".txt");
@@ -69,8 +72,7 @@ public class Test {
 		// .getAbsolutePath() + "b.txt"), "gbk"));
 	}
 
-	protected static void save(File file, BufferedWriter writer)
-			throws IOException {
+	protected void save(File file, BufferedWriter writer) throws IOException {
 		Document doc = Jsoup.parse(file, "gbk");
 		Elements titles = doc.select("font[face$=楷体_GB2312]");
 		for (Element title : titles) {
@@ -97,7 +99,7 @@ public class Test {
 		writer.flush();
 	}
 
-	static String read(File file) throws IOException {
+	String read(File file) throws IOException {
 		StringBuffer buffer = new StringBuffer();
 		BufferedReader reader = new BufferedReader(new InputStreamReader(
 				new FileInputStream(file), "gbk"));
@@ -106,6 +108,7 @@ public class Test {
 		while ((line = reader.readLine()) != null) {
 			buffer.append(line);
 		}
+		IOUtils.closeQuietly(reader);
 		return buffer.toString();
 	}
 }

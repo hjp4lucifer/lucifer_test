@@ -3,13 +3,16 @@
  */
 package cn.lucifer.demo.character;
 
+import org.junit.Test;
+
 /**
  * @author Lucifer
  * 
  */
 public class CharTest {
 
-	public static void main1(String[] args) {
+	@Test
+	public void testMain(String[] args) {
 		// char a = '０', z = '９';
 		// for (int i = a; i <= z; i++) {
 		// System.out.println((char) i);

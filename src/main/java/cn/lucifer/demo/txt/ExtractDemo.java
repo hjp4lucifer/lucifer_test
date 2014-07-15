@@ -15,16 +15,16 @@ import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.Comparator;
 
+import org.junit.Test;
+
 /**
  * @author Lucifer
  * 
  */
 public class ExtractDemo {
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) throws IOException {
+	@Test
+	public void testMain() throws IOException {
 		String path = "E:/books/潜龙/ql/08/txt";
 		File folder = new File(path), outFile = new File(path + "/"
 				+ System.currentTimeMillis() + ".txt");
@@ -102,5 +102,5 @@ public class ExtractDemo {
 		System.out.println("ok!");
 	}
 
-	static final String title_sign = "<p align=center style='FONT-SIZE:13.5pt;font-family:宋体'><b>";
+	final String title_sign = "<p align=center style='FONT-SIZE:13.5pt;font-family:宋体'><b>";
 }

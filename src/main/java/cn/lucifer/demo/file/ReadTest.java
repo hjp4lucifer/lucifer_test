@@ -10,17 +10,16 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import org.junit.Test;
+
 /**
  * @author Lucifer
  * 
  */
 public class ReadTest {
 
-	/**
-	 * @param args
-	 * @throws IOException
-	 */
-	public static void main(String[] args) throws IOException {
+	@Test
+	public void testMain() throws IOException {
 		String path = "E:/数据库/db/renren.txt";
 		File file = new File(path);
 		File floder = new File(path + System.currentTimeMillis());
@@ -44,7 +43,7 @@ public class ReadTest {
 		writer.close();
 	}
 
-	public static BufferedWriter createWriter(File floder, int lineCount)
+	public BufferedWriter createWriter(File floder, int lineCount)
 			throws IOException {
 		return new BufferedWriter(new FileWriter(new File(
 				floder.getAbsolutePath() + "/" + (lineCount / 60000) + ".txt")));

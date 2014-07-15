@@ -5,12 +5,10 @@ package cn.lucifer.demo.file;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.channels.FileChannel;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.junit.Test;
 
 /**
  * @author Lucifer
@@ -18,7 +16,8 @@ import org.apache.commons.codec.digest.DigestUtils;
  */
 public class FileTest {
 
-	public static void main(String[] args) throws IOException {
+	@Test
+	public void testMain() throws IOException {
 		System.out.println(System.getProperty("user.dir"));
 		System.out.println(new File("D:/dev/workspace/Demo").getParent());
 		System.out.println(new File("D:/dev/workspace/Demo").getName());

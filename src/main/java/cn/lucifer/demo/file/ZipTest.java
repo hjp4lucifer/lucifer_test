@@ -3,7 +3,6 @@
  */
 package cn.lucifer.demo.file;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -12,6 +11,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.junit.Test;
 
 /**
  * @author Lucifer
@@ -19,12 +19,8 @@ import org.apache.commons.io.IOUtils;
  */
 public class ZipTest {
 
-	/**
-	 * @param args
-	 * @throws IOException
-	 */
-	public static void main(String[] args) throws IOException {
-		long start = System.currentTimeMillis(), end;
+	@Test
+	public void testMain() throws IOException {
 		File file = new File("D:/test/zipTTT.zip");
 		ZipOutputStream outputStream = new ZipOutputStream(
 				new FileOutputStream(file));
@@ -35,8 +31,6 @@ public class ZipTest {
 		outputStream.closeEntry();
 		outputStream.flush();
 		outputStream.close();
-		end = System.currentTimeMillis();
-		System.out.println(end - start);
 	}
 
 }

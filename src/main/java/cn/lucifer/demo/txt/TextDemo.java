@@ -9,9 +9,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 
+import org.junit.Test;
+
 public class TextDemo {
 
-	public static void main(String[] args) throws IOException {
+	@Test
+	public void testMain() throws IOException {
 		String path = "E:/books/随波逐流之一代军师/temp/";
 		String sourcePath = path + "随波逐流一代军师_qidian.txt";
 		File sourceFile = new File(sourcePath);
@@ -50,7 +53,7 @@ public class TextDemo {
 		System.out.println("ok!");
 	}
 
-	private static String changeNumber(String cc, int bb) {
+	private String changeNumber(String cc, int bb) {
 		String num = null;
 		for (int i = 0; i < cc.length(); i++) {
 			char nn = cc.charAt(i);
@@ -88,7 +91,7 @@ public class TextDemo {
 		return num;
 	}
 
-	private static String processNum(String num, int nn) {
+	private String processNum(String num, int nn) {
 		if (num == null) {
 			num = String.valueOf(nn);
 		} else if (num.charAt(num.length() - 1) == '0') {

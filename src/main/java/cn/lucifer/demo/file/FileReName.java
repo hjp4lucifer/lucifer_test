@@ -2,12 +2,12 @@ package cn.lucifer.demo.file;
 
 import java.io.File;
 
+import org.junit.Test;
+
 public class FileReName {
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
+	@Test
+	public void testMain() {
 		String pathname = "E:/books/chenyuan";
 		File folder = new File(pathname);
 		if (folder.isDirectory()) {

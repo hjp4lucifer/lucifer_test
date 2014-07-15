@@ -14,13 +14,16 @@ import java.io.OutputStreamWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.junit.Test;
+
 /**
  * @author Lucifer
  * 
  */
 public class FixTextDemo {
 
-	public static void main(String[] args) throws IOException {
+	@Test
+	public void testMain(String[] args) throws IOException {
 		String path = "E:/books/紫屋魔恋/长篇/";
 		String fileName = path + "游龙传.bak.txt", outName = path
 				+ System.currentTimeMillis() + ".txt";
@@ -65,7 +68,7 @@ public class FixTextDemo {
 		System.out.println("ok!");
 	}
 
-	public static void yack(String[] args) throws IOException {
+	public void yack(String[] args) throws IOException {
 		String path = "E:/books/紫屋魔恋/长篇/";
 		String fileName = path + "鹰翔长空.bak.txt", outName = path
 				+ System.currentTimeMillis() + ".txt";
@@ -107,7 +110,7 @@ public class FixTextDemo {
 		System.out.println("ok!");
 	}
 
-	public static void lqxn(String[] args) throws IOException {
+	public void lqxn(String[] args) throws IOException {
 		String path = "E:/books/紫屋魔恋/长篇/";
 		String fileName = path + "浪情俠女.bak.txt", outName = path
 				+ System.currentTimeMillis() + ".txt";
@@ -155,7 +158,7 @@ public class FixTextDemo {
 	/**
 	 * @param args
 	 */
-	public static void xxmz(String[] args) throws IOException {
+	public void xxmz(String[] args) throws IOException {
 		String path = "E:/books/潜龙/";
 		String fileName = path + "【仙侠魔踪】(全书完).bak.txt", outName = path
 				+ System.currentTimeMillis() + ".txt";

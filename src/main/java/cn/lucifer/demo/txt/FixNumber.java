@@ -14,14 +14,17 @@ import java.io.OutputStreamWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.junit.Test;
+
 /**
  * @author Lucifer
  * 
  */
 public class FixNumber {
-	static String regexZhang = "[一|二|三|四|五|六|七|八|九|十|百|零|\\d]{1,5}[章|节]";
+	String regexZhang = "[一|二|三|四|五|六|七|八|九|十|百|零|\\d]{1,5}[章|节]";
 
-	public static void main(String[] args) throws IOException {
+	@Test
+	public void testMain() throws IOException {
 		String path = "E:/books/徐公子胜治/地师/";
 		String fileName = path + "地师.bak.txt";
 		String outName = path + System.currentTimeMillis() + ".txt";
@@ -38,7 +41,8 @@ public class FixNumber {
 			boolean not_clean = true, show = true;
 			if (matcher.find() && line.trim().length() < 30) {
 				String s = matcher.group();
-				if (line.indexOf("第") < 0 && line.indexOf("：") < 0&& line.indexOf(":") < 0) {
+				if (line.indexOf("第") < 0 && line.indexOf("：") < 0
+						&& line.indexOf(":") < 0) {
 					line = line.replace(s, "第" + s.substring(0, s.length() - 1)
 							+ "章 ");
 				} else {
@@ -65,7 +69,7 @@ public class FixNumber {
 		System.out.println("ok!" + index);
 	}
 
-	public static void lingsan(String[] args) throws IOException {
+	public void lingsan(String[] args) throws IOException {
 		String path = "E:/books/灵山/";
 		String fileName = path + "灵山.txt";
 		String outName = path + System.currentTimeMillis() + ".txt";
@@ -94,7 +98,7 @@ public class FixNumber {
 		System.out.println("ok!" + index);
 	}
 
-	public static void renyu(String[] args) throws IOException {
+	public void renyu(String[] args) throws IOException {
 		String path = "E:/books/人欲/";
 		String fileName = path + "人欲.txt";
 		String outName = path + System.currentTimeMillis() + ".txt";
@@ -124,15 +128,14 @@ public class FixNumber {
 		System.out.println("ok!" + index);
 	}
 
-	static String[] ads = { "[手机电子书网 http://www.517z.com]",
-			"[手机电子书网 www.517z.com]" };
+	String[] ads = { "[手机电子书网 http://www.517z.com]", "[手机电子书网 www.517z.com]" };
 
 	/**
 	 * @param args
 	 * @throws IOException
 	 * @throws
 	 */
-	public static void shenyou(String[] args) throws IOException {
+	public void shenyou(String[] args) throws IOException {
 		String path = "E:/books/神游/";
 		String fileName = path + "神游_lucifer.txt";
 		String outName = path + System.currentTimeMillis() + ".txt";

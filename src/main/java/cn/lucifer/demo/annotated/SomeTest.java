@@ -5,6 +5,8 @@ package cn.lucifer.demo.annotated;
 
 import java.lang.annotation.Annotation;
 
+import org.junit.Test;
+
 import com.google.code.morphia.annotations.Entity;
 
 /**
@@ -12,18 +14,21 @@ import com.google.code.morphia.annotations.Entity;
  * 
  */
 @Entity(value = "tt")
-public class Test {
-	public static void main(String[] args) {
+public class SomeTest {
+
+	@Test
+	public void testMain() {
 		Annotation[] as = EntityDemo.class.getAnnotations();
 		for (Annotation annotation : as) {
 			System.out.println(annotation);
 		}
 
-		LuciferAnnotated a = Test.class.getAnnotation(LuciferAnnotated.class);
-		System.out.println(Test.class
+		LuciferAnnotated a = SomeTest.class
+				.getAnnotation(LuciferAnnotated.class);
+		System.out.println(SomeTest.class
 				.isAnnotationPresent(LuciferAnnotated.class));
 		System.out.println(a);
-		Entity b = Test.class.getAnnotation(Entity.class);
+		Entity b = SomeTest.class.getAnnotation(Entity.class);
 		System.out.println(b);
 	}
 }

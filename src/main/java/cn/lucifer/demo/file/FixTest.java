@@ -10,20 +10,19 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import org.junit.Test;
+
 /**
  * @author Lucifer
  * 
  */
 public class FixTest {
 
-	/**
-	 * @param args
-	 * @throws IOException
-	 */
-	public static void main(String[] args) throws IOException {
+	@Test
+	public void testMain() throws IOException {
 		String path = "D:/test/";
 		File file = new File(path + "ico.txt");
-		File outFile = new File(path+ System.currentTimeMillis()+".txt");
+		File outFile = new File(path + System.currentTimeMillis() + ".txt");
 		BufferedReader reader = new BufferedReader(new FileReader(file));
 		BufferedWriter writer = new BufferedWriter(new FileWriter(outFile));
 

@@ -3,12 +3,12 @@ package cn.lucifer.demo.file;
 import java.io.File;
 import java.io.IOException;
 
+import org.junit.Test;
+
 public class MoveFile {
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) throws IOException {
+	@Test
+	public void testMain(String[] args) throws IOException {
 		String srcFolderPath = "E:/sd_cache/img/20140227-01";
 		String desFolderPath = "E:/sd_cache/img/20140306-01";
 		File srcFolder = new File(srcFolderPath);
@@ -23,7 +23,7 @@ public class MoveFile {
 	 * @param srcFolder
 	 * @param desFolder
 	 */
-	public static void moveNoCoverCheck(File srcFolder, File desFolder)
+	public void moveNoCoverCheck(File srcFolder, File desFolder)
 			throws IOException {
 		// 标准化文件路径
 		String srcPath = srcFolder.getPath();
@@ -43,8 +43,7 @@ public class MoveFile {
 		}
 	}
 
-	public static File getDestFolder(File srcFile, String srcPath,
-			String desPath) {
+	public File getDestFolder(File srcFile, String srcPath, String desPath) {
 		String desFilePath = srcFile.getPath().replace(srcPath, desPath);
 		// System.out.println(desFilePath);
 		File dest = new File(desFilePath);
@@ -57,7 +56,7 @@ public class MoveFile {
 		return null;
 	}
 
-	public static void moveNoCover(File srcFile, String srcPath, String desPath) {
+	public void moveNoCover(File srcFile, String srcPath, String desPath) {
 		String desFilePath = srcFile.getPath().replace(srcPath, desPath);
 		File dest = new File(desFilePath);
 		if (dest.exists()) {

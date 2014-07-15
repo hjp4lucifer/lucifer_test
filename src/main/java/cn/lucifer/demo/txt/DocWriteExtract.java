@@ -8,7 +8,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -16,6 +15,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.junit.Test;
 
 /**
  * 针对CHM解压后，生成的txt文件，是以document.write方式输出
@@ -25,21 +25,17 @@ import org.apache.commons.lang.StringUtils;
  */
 public class DocWriteExtract {
 
-	private static final String book_name = "美人图";
-	private static final String resource_folder_parent = "D:/book/limit/河图/"
+	private final String book_name = "美人图";
+	private final String resource_folder_parent = "D:/book/limit/河图/"
 			+ book_name;
-	private static final String resource_folder = resource_folder_parent
-			+ "/txt";
-	// private static final String result = "results/" + book_name + ".txt";
-	private static final String result = resource_folder_parent + "/"
-			+ book_name + ".txt";
-	private static final String encoding = "gbk";
+	private final String resource_folder = resource_folder_parent + "/txt";
+	// private final String result = "results/" + book_name + ".txt";
+	private final String result = resource_folder_parent + "/" + book_name
+			+ ".txt";
+	private final String encoding = "gbk";
 
-	/**
-	 * @param args
-	 * @throws IOException
-	 */
-	public static void main(String[] args) throws IOException {
+	@Test
+	public void testMain() throws IOException {
 		File outFile = new File(result);
 		if (outFile.exists()) {
 			outFile.delete();
@@ -66,22 +62,21 @@ public class DocWriteExtract {
 
 	// private static final Regex
 
-	private static final String document_prefix = "document.write";
-	private static final int document_prefix_length = document_prefix.length();
-	private static final Pattern p_tag_regex_1 = Pattern.compile("<p[^>]+>");
-	private static final Pattern p_tag_regex_2 = Pattern.compile("<p>");
-	private static final Pattern a_tag_regex = Pattern.compile("<a[^>]+>.*a>");
-	private static final Pattern a_tag_ill_regex = Pattern.compile("<a[^>]+>");
-	private static final Pattern b_tag_1_regex = Pattern.compile("<b>");
-	private static final Pattern b_tag_2_regex = Pattern.compile("</b>");
-	private static final Pattern font_tag_1_regex = Pattern
-			.compile("<font[^>]+>");
-	private static final Pattern font_tag_2_regex = Pattern.compile("</font>");
-	private static final Pattern center_tag_regex = Pattern
+	private final String document_prefix = "document.write";
+	private final int document_prefix_length = document_prefix.length();
+	private final Pattern p_tag_regex_1 = Pattern.compile("<p[^>]+>");
+	private final Pattern p_tag_regex_2 = Pattern.compile("<p>");
+	private final Pattern a_tag_regex = Pattern.compile("<a[^>]+>.*a>");
+	private final Pattern a_tag_ill_regex = Pattern.compile("<a[^>]+>");
+	private final Pattern b_tag_1_regex = Pattern.compile("<b>");
+	private final Pattern b_tag_2_regex = Pattern.compile("</b>");
+	private final Pattern font_tag_1_regex = Pattern.compile("<font[^>]+>");
+	private final Pattern font_tag_2_regex = Pattern.compile("</font>");
+	private final Pattern center_tag_regex = Pattern
 			.compile("<center>.*center>");
-	private static final Pattern span_4_chinese_regex = Pattern.compile("　");
+	private final Pattern span_4_chinese_regex = Pattern.compile("　");
 
-	protected static String praseText(List<String> lines) {
+	protected String praseText(List<String> lines) {
 		StringBuffer text = new StringBuffer();
 		String[] subLines;
 		for (String line : lines) {
@@ -118,7 +113,7 @@ public class DocWriteExtract {
 		return text.toString();
 	}
 
-	protected static File[] getTxtFileNames() {
+	protected File[] getTxtFileNames() {
 		File folder = new File(resource_folder);
 		File[] txtFiles = folder.listFiles(new FilenameFilter() {
 

@@ -9,28 +9,24 @@ import java.io.InputStreamReader;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
+import org.junit.Test;
 
 public class FindString {
 
 	// static String keyword = "広瀬ゆな";
-	static String keyword = "みづな";
+	String keyword = "みづな";
 
 	// static String keyword = "Claire Castel";// Michelle
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) throws IOException {
+	@Test
+	public void testMain() throws IOException {
 		String folderPath = "D:/limit/doc";
-		if (args != null && args.length != 0) {
-			keyword = args[0];
-		}
 		File folder = new File(folderPath);
 		find(folder);
 		// System.in.read();
 	}
 
-	protected static void find(File folder) throws IOException {
+	protected void find(File folder) throws IOException {
 		File[] files = folder.listFiles(new FileFilter() {
 			@Override
 			public boolean accept(File file) {
