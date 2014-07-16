@@ -9,8 +9,8 @@ public class MoveFile {
 
 	@Test
 	public void testMain(String[] args) throws IOException {
-		String srcFolderPath = "E:/sd_cache/img/20140227-01";
-		String desFolderPath = "E:/sd_cache/img/20140306-01";
+		String srcFolderPath = "F:/sd_cache/img/sdop/20140703-01";
+		String desFolderPath = "F:/sd_cache/img/sdop/20140710-01";
 		File srcFolder = new File(srcFolderPath);
 		File desFolder = new File(desFolderPath);
 
