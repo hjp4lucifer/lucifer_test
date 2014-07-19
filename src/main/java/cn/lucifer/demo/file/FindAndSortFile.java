@@ -5,7 +5,6 @@ import java.io.FilenameFilter;
 import java.util.Arrays;
 import java.util.Comparator;
 
-
 public class FindAndSortFile {
 
 	public File[] findBy(String folderPath, final String suffix) {
@@ -22,12 +21,11 @@ public class FindAndSortFile {
 		});
 
 		Arrays.sort(files, new Comparator<File>() {
+			private IntuitiveStringComparator comparator = new IntuitiveStringComparator();
 
 			@Override
 			public int compare(File o1, File o2) {
-				String o1Name = o1.getName();
-				String o2Name = o2.getName();
-				return o1.getName().compareTo(o2.getName());
+				return comparator.compare(o1.getName(), o2.getName());
 			}
 		});
 
