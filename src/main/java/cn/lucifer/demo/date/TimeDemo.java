@@ -111,4 +111,19 @@ public class TimeDemo {
 		return result;
 	}
 
+	@Test
+	public void testGetDownloadCount() throws Exception {
+		System.out.println(getDay(timeFormat.parse("2014-07-24 11:06:54.772")));
+	}
+
+	protected int getDay(Date time) {
+		long now = System.currentTimeMillis();
+		if (null == time || now < time.getTime()) {
+			return 0;
+		}
+
+		long day = (now - time.getTime()) / (3600000 * 24);
+		System.out.println(day);
+		return (int) day;
+	}
 }

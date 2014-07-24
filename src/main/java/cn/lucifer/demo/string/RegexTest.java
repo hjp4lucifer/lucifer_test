@@ -3,10 +3,15 @@
  */
 package cn.lucifer.demo.string;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 
 /**
@@ -37,7 +42,7 @@ public class RegexTest {
 			System.out.println(matcher.group());
 		}
 	}
-
+	
 	@Test
 	public void test3() {
 		String regex = "\\w+([-+.']\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*";
@@ -101,4 +106,31 @@ public class RegexTest {
 		System.out.println("ok!");
 	}
 
+	@Test
+	public void testRemove() throws IOException {
+		File file = new File("resource/string.txt");
+		String txt = FileUtils.readFileToString(file);
+		System.out.println(txt);
+		System.out.println("\n\n\n\n");
+		String regex = "<font .*?>(.*?)</font>";
+		List<String> chilren = getMatchChildren( txt,regex);
+		for (String str : chilren) {
+			str = StringUtils.remove(str, '-');
+			System.out.println(str);
+		}
+	}
+	
+	public List<String> getMatchChildren(String source, String regex) {
+		Pattern expression = Pattern.compile(regex);
+		Matcher matcher = expression.matcher(source);
+		int groupCount;
+		List<String> children = new ArrayList<String>();
+		while (matcher.find()) {
+			groupCount = matcher.groupCount();
+			for (int i = 1; i <= groupCount; i++) {
+				children.add(matcher.group(i));
+			}
+		}
+		return children;
+	}
 }
