@@ -45,7 +45,9 @@ public class ArrayTest {
 	}
 
 	private void runArray() {
-		int[][] array = new int[256][256];
-		System.out.println(array[1][3]);
+		//int[][] array = new int[256][256];
+		//System.out.println(array[1][3]);
+		int[] array= new int[256];
+		System.out.println(array[1]);
 	}
 }
