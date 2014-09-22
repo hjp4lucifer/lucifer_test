@@ -17,21 +17,9 @@ import org.junit.Test;
 
 public class FindString implements IFind {
 
-	// String keyword = "あずみ恋";
+	String keyword = "jqplot";
 
-	// String keyword = "白咲舞";
-	// String keyword = "原明奈";
-	// String keyword = "Ai Nanao";//菜々緒愛
-	// String keyword = "浅乃ハルミ";
-	String keyword = "鮎川なお ";
-	// String keyword = "椎名由奈";
-	// String keyword = "神村美沙";
-	// String keyword = "西山希";
-	// String keyword = "かすみゆら";
-
-	// static String keyword = "Claire Castel";// Michelle
-
-	final String folderPath = "E:/limit/doc";
+	final String folderPath = "D:/workspace/yinba_web/public/bg/jslib";
 
 	@Test
 	public void main() throws IOException {
