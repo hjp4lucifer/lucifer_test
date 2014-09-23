@@ -21,7 +21,7 @@ public class GeoHash {
 				log.debug("_hash=\t" + Long.toBinaryString(_hash));
 			}
 			if (isBitSet(y, i)) {
-				_hash |= mask64For((i * 2) + 1);
+				_hash |= mask64For((i * 2) + 1);//用相邻位表示, 容易生成接近值
 				log.debug("_hash=\t" + Long.toBinaryString(_hash));
 			}
 		}
