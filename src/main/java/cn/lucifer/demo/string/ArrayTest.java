@@ -3,6 +3,7 @@
  */
 package cn.lucifer.demo.string;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 import org.junit.Test;
@@ -35,19 +36,39 @@ public class ArrayTest {
 	public void testRunArray4Loop() {
 		long startFreeMemory = Runtime.getRuntime().freeMemory();
 		for (int i = 0; i < 10000; i++) {
-			System.out.print(i + "-");
-			testRunArray();
+			runArray();
+			// System.out.print(i + "-");
+			// testRunArray();
 		}
 		long endFreeMemory = Runtime.getRuntime().freeMemory();
 		System.out.println(String.format(
-				"result: startFreeMemory=%d, endFreeMemory=%d",
-				startFreeMemory, endFreeMemory));
+				"result: startFreeMemory=%d, endFreeMemory=%d, diff=%d",
+				startFreeMemory, endFreeMemory,
+				(startFreeMemory - endFreeMemory)));
 	}
 
+	private final int[][] _array = { { 0, 1, 2 }, { 22, 33, 5 }, { 23, 34, 7 },
+			{ 25, 37, 9 } };
+
 	private void runArray() {
-		//int[][] array = new int[256][256];
-		//System.out.println(array[1][3]);
-		int[] array= new int[256];
-		System.out.println(array[1]);
+		// int[][] array = new int[256][256];
+		int[][] array = { { 0, 1, 2 }, { 22, 33, 5 }, { 23, 34, 7 },
+				{ 25, 37, 9 } };
+		// String a = "My God !!!! What is happend!!!!!";
+		// System.out.println(array[1][2]);
+		// int[] array= new int[256];
+		// System.out.println(array[1]);
 	}
+
+	@Test
+	public void testArrayClass() {
+		ArrayTest[] array = new ArrayTest[3];
+		System.out.println(ArrayTest.class.getName());
+		System.out.println(array.getClass().getName());
+		System.out.println(array.getClass().getSuperclass().getName());
+		ArrayList<ArrayTest> list = new ArrayList<ArrayTest>(3);
+		System.out.println(list.getClass().getName());
+		System.out.println(list.toArray().getClass().getName());
+	}
+
 }

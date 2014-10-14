@@ -24,4 +24,13 @@ public class NumberTest {
 		s = s.substring(s.length() - 4);
 		System.out.println(s);
 	}
+	
+	@Test
+	public void testRandom(){
+		for (int i = 0; i < 20; i++) {
+			int r = (int) (Math.random() * 1000000);
+			//System.out.println(r);
+			System.out.println(String.format("%06d", r));
+		}
+	}
 }

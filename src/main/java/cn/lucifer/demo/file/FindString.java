@@ -17,9 +17,12 @@ import org.junit.Test;
 
 public class FindString implements IFind {
 
-	String keyword = "jqplot";
+	String keyword = "GeoCursorBase";
 
-	final String folderPath = "D:/workspace/yinba_web/public/bg/jslib";
+	// final String folderPath = "D:/workspace/yinba_web/public/bg/jslib";
+	final String folderPath = "D:/tools/mongodb-src-r2.4.11/mongodb-src-r2.4.11/src";
+	
+	final String fileSuffix = ".cpp";
 
 	@Test
 	public void main() throws IOException {
@@ -104,7 +107,7 @@ public class FindString implements IFind {
 				if (file.isDirectory()) {
 					return true;
 				}
-				return file.getName().endsWith(".html");
+				return file.getName().endsWith(fileSuffix);
 			}
 		});
 
