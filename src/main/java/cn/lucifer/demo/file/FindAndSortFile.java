@@ -32,4 +32,27 @@ public class FindAndSortFile {
 		return files;
 	}
 
+	/**
+	 * 
+	 * @author Lucifer
+	 *
+	 */
+	class SortFiles implements Comparator<File> {
+
+		@Override
+		public int compare(File o1, File o2) {
+			String fn1 = o1.getName();
+			fn1 = fn1.substring(0, fn1.lastIndexOf("."));
+			String fn2 = o2.getName();
+			fn2 = fn2.substring(0, fn2.lastIndexOf("."));
+			try {
+				int num1 = Integer.parseInt(fn1);
+				int num2 = Integer.parseInt(fn2);
+				return num1 - num2;
+			} catch (Exception e) {
+			}
+
+			return fn1.compareToIgnoreCase(fn2);
+		}
+	}
 }
