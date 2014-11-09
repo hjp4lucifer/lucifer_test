@@ -26,8 +26,9 @@ public class SinaBlogDemo {
 		// String baseSaveFloderPath = "D:/pic/model/韩一菲/blog";
 		// String baseSaveFloderPath = "D:/pic/model/周蕊/blog";
 		// String baseSaveFloderPath = "D:/pic/model/叶梓萱/blog";
-		String baseSaveFloderPath = "D:/pic/model/周韦彤/blog";
-		String listUrl = "http://photo.blog.sina.com.cn/blogpiclist/u/1197069394";
+//		String baseSaveFloderPath = "D:/pic/model/周韦彤/blog";
+		String baseSaveFloderPath = "E:/pic/丁琳/blog";
+		String listUrl = "http://photo.blog.sina.com.cn/blogpiclist/u/1493272467";
 		File f_base = new File(baseSaveFloderPath);
 		if (!f_base.exists()) {
 			f_base.mkdirs();
@@ -88,7 +89,7 @@ public class SinaBlogDemo {
 					continue;
 				}
 				String baseSavePath = baseSaveFloderPath + "/" + folderName;
-				new File(baseSavePath).mkdir();
+				new File(baseSavePath).mkdirs();
 
 				Elements photos = pt_list_nb.get(i).select("a");
 				for (Element photo : photos) {
