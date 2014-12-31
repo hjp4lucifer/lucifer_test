@@ -17,8 +17,8 @@ public class SinaBlogPhotosAllDemo {
 
 	@Test
 	public void testMain() throws IOException {
-		String baseSaveFloderPath = "D:/pic/model/叶梓萱/photos";
-		String listUrl = "http://photo.blog.sina.com.cn/categorys/p/1764855964";
+		String baseSaveFloderPath = "D:/pic/model/柳岩/photos";
+		String listUrl = "http://photo.blog.sina.com.cn/categorys/p/1259871184";
 		File f_base = new File(baseSaveFloderPath);
 		if (!f_base.exists()) {
 			f_base.mkdirs();

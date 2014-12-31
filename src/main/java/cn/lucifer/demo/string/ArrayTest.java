@@ -71,4 +71,14 @@ public class ArrayTest {
 		System.out.println(list.toArray().getClass().getName());
 	}
 
+	@Test
+	public void testArrayListToArray(){
+		ArrayList<Object> args = new ArrayList<Object>();
+		args.add("hi");
+		args.add("my");
+		Object[] objs = args.toArray();
+		for (Object obj : objs) {
+			System.out.println(obj);
+		}
+	}
 }

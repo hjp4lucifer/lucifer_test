@@ -13,7 +13,6 @@ import org.junit.Test;
 
 import cn.lucifer.util.HttpClientHelper;
 
-
 public class SinaBlogDemo {
 
 	@Test
@@ -26,9 +25,11 @@ public class SinaBlogDemo {
 		// String baseSaveFloderPath = "D:/pic/model/韩一菲/blog";
 		// String baseSaveFloderPath = "D:/pic/model/周蕊/blog";
 		// String baseSaveFloderPath = "D:/pic/model/叶梓萱/blog";
-//		String baseSaveFloderPath = "D:/pic/model/周韦彤/blog";
-		String baseSaveFloderPath = "E:/pic/丁琳/blog";
-		String listUrl = "http://photo.blog.sina.com.cn/blogpiclist/u/1493272467";
+		// String baseSaveFloderPath = "D:/pic/model/周韦彤/blog";
+		// String baseSaveFloderPath = "D:/pic/model/柳岩/blog";
+		String baseSaveFloderPath = "D:/pic/密斯特龚的博客/blog";
+		String listUrl = "http://photo.blog.sina.com.cn/blogpiclist/u/1530179405";
+		// listUrl = "http://photo.blog.sina.com.cn/blogpiclist/u/1259871184";
 		File f_base = new File(baseSaveFloderPath);
 		if (!f_base.exists()) {
 			f_base.mkdirs();
@@ -109,6 +110,10 @@ public class SinaBlogDemo {
 			String baseSavePath) throws IOException {
 		System.out.println(imagePageUrl
 				+ "\t is tcurrent process image page url !");
+		if (imagePageUrl.indexOf("original") > 0) {
+			SinaBlogPhotosDemo.saveFile(imagePageUrl, baseSavePath);
+			return;
+		}
 		String html = new String(HttpClientHelper.httpGet(imagePageUrl, null));
 		Document doc = Jsoup.parse(html);
 		Elements as = doc.select("div.photoContDesc div a");

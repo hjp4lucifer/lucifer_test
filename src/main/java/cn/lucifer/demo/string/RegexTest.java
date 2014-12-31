@@ -133,4 +133,20 @@ public class RegexTest {
 		}
 		return children;
 	}
+
+	@Test
+	public void testUserAgentFind() {
+		String userAgent = "Mozilla/5.0 (iPhoe; U; CPU iPone OS 3_0 like Mac OS X; en-us) AppleWebKit/528.18 (KHTML, like Gecko) Version/4.0 Mobile/7A341 Safari/528.16";
+
+		final String regex = "iphone|ipod|ipad|android"; 
+		userAgent = userAgent.toLowerCase();
+		System.out.println(Pattern.compile(regex).matcher(userAgent).find());
+		System.out.println(userAgent.replaceAll(regex, ""));
+	}
+	
+	@Test
+	public void testMatch(){
+		final String callback = "d";
+		System.out.println(Pattern.matches("\\w+", callback));
+	}
 }

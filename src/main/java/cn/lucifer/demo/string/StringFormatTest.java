@@ -5,6 +5,7 @@ package cn.lucifer.demo.string;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import org.junit.Test;
 
@@ -24,17 +25,31 @@ public class StringFormatTest {
 	@Test
 	public void testDateFormat() throws ParseException {
 		String[] strArray = { "2014-03-05 9", "2014-03-05 10", "2014-03-05 0",
-				"2014-03-05 22" };
+				"2014-03-05 22", "2014-12-23 0" };
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd H");
+		Date time;
 		for (String str : strArray) {
-			System.out.println(str + " : " + format.parse(str));
+			time = format.parse(str);
+			System.out.println(str + " : " + time + " : " + time.getTime());
 		}
 	}
 
 	@Test
 	public void testNumberFormat() {
-		String result = String.format("%02X", 1);
+		String result = String.format("%05X", 800000);
 		System.out.println(result);
+		result = String.format("%05X", 3);
+		System.out.println(result);
+	}
+
+	@Test
+	public void testPrint() {
+		print(null);
+	}
+
+	protected void print(Long id) {
+		String str = String.format("id=%d", id);
+		System.out.println(str);
 	}
 
 }
