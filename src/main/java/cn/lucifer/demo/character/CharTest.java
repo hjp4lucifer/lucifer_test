@@ -12,7 +12,7 @@ import org.junit.Test;
 public class CharTest {
 
 	@Test
-	public void testMain(String[] args) {
+	public void testMain() {
 		// char a = '０', z = '９';
 		// for (int i = a; i <= z; i++) {
 		// System.out.println((char) i);
