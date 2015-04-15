@@ -17,6 +17,7 @@ public class ClientTest {
 	public void testClient() throws Exception {
 		try {
 			TTransport transport = new TSocket("127.0.0.1", 9090);
+//			TTransport transport = new TSocket("local.game.duowan.com", 9090);
 			TProtocol protocol = new TBinaryProtocol(new TFramedTransport(
 					transport));
 //			TProtocol protocol = new TJSONProtocol(new TFramedTransport(
@@ -24,7 +25,7 @@ public class ClientTest {
 			Calculator.Client client = new Calculator.Client(protocol);
 			transport.open();
 
-			SharedStruct sss = new SharedStruct(111, "my", 1);
+			SharedStruct sss = new SharedStruct(111, "my", Long.MAX_VALUE);
 			SharedStruct adInfoStr = client.ping(sss);
 			transport.close();
 

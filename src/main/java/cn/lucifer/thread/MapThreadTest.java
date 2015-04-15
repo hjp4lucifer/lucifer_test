@@ -16,8 +16,9 @@ public class MapThreadTest {
 		ExecutorService service;
 		service = Executors.newCachedThreadPool();
 		final HashMap<Integer, Integer> map = new HashMap<>(30);
-		for (int i = 1; i < 4; i++) {
-			map.put(i, i);
+		for (int i = 1; i < 5; i++) {
+			// map.put(i, i);
+			map.put(i, null);
 		}
 		System.out.println(map);
 		final CountDownLatch cdOrder = new CountDownLatch(1);
@@ -86,9 +87,10 @@ public class MapThreadTest {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				int key = i % 3;
+				int key = i % 3;// error
+				key = i % 3 + 1;
 
-				System.out.println("key=" + key);
+				System.out.println("key=" + key + ", value=" + map.get(key));
 				// map.remove(key);
 				map.put(key, map.get(key) == null ? 0 : map.get(key) + 1);
 			}

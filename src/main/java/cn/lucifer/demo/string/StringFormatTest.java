@@ -52,4 +52,49 @@ public class StringFormatTest {
 		System.out.println(str);
 	}
 
+	@Test
+	public void testNumberShow() {
+		int i = Integer.MAX_VALUE / 10;
+		System.out.println(i);
+		System.out.println(String.format("%.2f", i / 100f));
+	}
+
+	@Test
+	public void testNumberFix() {
+		int memory = 320;
+		if (memory > 100) {
+			int h, l;
+			h = memory / 100;
+			l = memory % 100;
+			System.out.println(String.format("%d.%02d", h, l));
+		} else {
+			System.out.println(memory / 100d);
+		}
+	}
+
+	@Test
+	public void testIp() {
+		String ip = "127.0.0.1";
+		System.out.println(ip.substring(0, ip.lastIndexOf(".")));
+		ip = "1.";
+		System.out.println(ip.substring(ip.lastIndexOf(".") + 1));
+	}
+	
+	@Test
+	public void testPrice(){
+		String unitPrice = "12"; 
+		// 转单位为元
+		if (unitPrice.length() > 2) {
+			unitPrice = new StringBuffer(unitPrice).insert(
+					unitPrice.length() - 2, '.').toString();
+		} else {
+			try {
+				int memory = Integer.parseInt(unitPrice);
+				unitPrice = String.valueOf(memory / 100d);
+			} catch (NumberFormatException e) {
+			}
+		}
+
+		System.out.println(unitPrice);
+	}
 }

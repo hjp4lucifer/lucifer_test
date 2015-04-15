@@ -10,8 +10,6 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.junit.Test;
 
@@ -54,7 +52,7 @@ public class SocketTest {
 		// 写完以后进行读操作
 		BufferedReader reader = new BufferedReader(new InputStreamReader(
 				client.getInputStream(), ServerTask.encode));
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		String line;
 		int index;
 		try {

@@ -65,4 +65,38 @@ public class StringTest {
 				"yyyy-MM-dd HH:mm:ss.SSS");
 		System.out.println(format.format(new Date(time)));
 	}
+
+	@Test
+	public void testFileSuffix() {
+		String fn = "abcd.jpeg";
+		String suffix = getSuffix(fn);
+		System.out.println(suffix);
+
+		fn = "abcd";
+		suffix = getSuffix(fn);
+		System.out.println(suffix);
+
+		fn = "abcd.";
+		suffix = getSuffix(fn);
+		System.out.println(suffix);
+	}
+
+	protected String getSuffix(String fn) {
+		String suffix = ".jpg";
+		int lastIndex = fn.lastIndexOf('.');
+		if (lastIndex > 0) {
+			suffix = fn.substring(lastIndex);
+		}
+		fn = new SimpleDateFormat("yyyyMMddHHmmssSSS").format(new Date())
+				+ suffix;
+		System.out.println(fn);
+		return suffix;
+	}
+
+	@Test
+	public void testLength() {
+		String s = "aabb";
+		s = "aabb啊";
+		System.out.println(s.getBytes().length);
+	}
 }
