@@ -73,6 +73,20 @@ public class StringFormatTest {
 	}
 
 	@Test
+	public void testNumberFix4Long() {
+		long memory = Long.MAX_VALUE;
+		memory = 12;
+		if (memory > 100) {
+			long h, l;
+			h = memory / 100;
+			l = memory % 100;
+			System.out.println(String.format("%d.%02d", h, l));
+		} else {
+			System.out.println(memory / 100d);
+		}
+	}
+
+	@Test
 	public void testIp() {
 		String ip = "127.0.0.1";
 		System.out.println(ip.substring(0, ip.lastIndexOf(".")));

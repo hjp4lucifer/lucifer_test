@@ -126,4 +126,11 @@ public class TimeDemo {
 		System.out.println(day);
 		return (int) day;
 	}
+	
+	@Test
+	public void testCalendar(){
+		Calendar c = Calendar.getInstance();
+		c.set(Calendar.HOUR_OF_DAY, 24);
+		System.out.println(timeFormat.format(c.getTime()));
+	}
 }

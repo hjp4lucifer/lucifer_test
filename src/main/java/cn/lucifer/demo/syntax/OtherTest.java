@@ -29,4 +29,21 @@ public class OtherTest {
 		System.out.println(bln);
 	}
 
+	@Test
+	public void testSwitch(){
+		int type = 7;
+		switch (type) {
+		case 7:
+			System.out.println(type + " -");
+			break;
+		case 0:
+		case 8:
+			System.out.println(type + " --");
+			break;
+
+		default:
+			System.out.println("default");
+			break;
+		}
+	}
 }
