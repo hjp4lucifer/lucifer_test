@@ -4,18 +4,22 @@ import static org.junit.Assert.*;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URL;
+import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 import org.junit.After;
 import org.junit.Before;
@@ -51,10 +55,9 @@ public class Book17k {
 	protected void parseBookIndexPage() throws IOException {
 		File file = new File(filePath);
 		System.out.println(file.getAbsolutePath());
-		//file.deleteOnExit();
+		// file.deleteOnExit();
 
-		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
-				new FileOutputStream(file), "gbk"));
+		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "gbk"));
 
 		URL url = new URL(bookIndexPageUri);
 		Document doc = Jsoup.parse(url, timeoutMillis);
@@ -88,15 +91,36 @@ public class Book17k {
 		IOUtils.closeQuietly(writer);
 	}
 
-	protected void parseBookChapterPage(String urlStr, BufferedWriter writer)
-			throws IOException {
+	protected void parseBookChapterPage(String urlStr, BufferedWriter writer) throws IOException {
 		URL url = new URL(baseUrl + urlStr);
 		Document doc = Jsoup.parse(url, timeoutMillis);
 		Element element = doc.getElementById("chapterContentWapper");
-		String html = element.html();
-		html = StringUtils.replace(html, "<br /><br />", "\n");
-		writer.write(html);
-		writer.write("\n\n");
+		List<Node> nodes = element.childNodes();
+		for (Node node : nodes) {
+			if (node instanceof TextNode) {
+				TextNode textNode = (TextNode) node;
+				String text = textNode.text().trim();
+				if (text.endsWith("本书首发来自17K小说网，第一时间看正版内容！")) {
+					continue;
+				}
+				if (StringUtils.EMPTY.equals(text)) {
+					continue;
+				}
+
+				// System.out.println(textNode.text());
+				writer.write(text);
+				writer.write("\n");
+			}
+		}
+
+		writer.write("\n\n\n");
 		writer.flush();
+	}
+
+	@Test
+	public void testParseBookChapterPage() throws IOException {
+		String urlStr = "/chapter/1470/1310639.html";
+		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new ByteArrayOutputStream()));
+		parseBookChapterPage(urlStr, writer);
 	}
 }
