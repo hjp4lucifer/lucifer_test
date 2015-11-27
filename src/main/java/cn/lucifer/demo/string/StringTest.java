@@ -3,6 +3,7 @@
  */
 package cn.lucifer.demo.string;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -59,11 +60,13 @@ public class StringTest {
 	}
 
 	@Test
-	public void testTime() {
-		long time = 1404258297000L;
+	public void testTime() throws ParseException {
+		long time = 1441854000000L;
 		SimpleDateFormat format = new SimpleDateFormat(
 				"yyyy-MM-dd HH:mm:ss.SSS");
 		System.out.println(format.format(new Date(time)));
+		
+		System.out.println(format.parse("2015-09-10 11:00:00.000").getTime());
 	}
 
 	@Test
@@ -98,5 +101,13 @@ public class StringTest {
 		String s = "aabb";
 		s = "aabb啊";
 		System.out.println(s.getBytes().length);
+	}
+
+	@Test
+	public void testProcess() {
+		String str = "com.iojia.app.ojiasns:1000000168766026";
+		int lastIndex = str.lastIndexOf(":");
+		str = str.substring(lastIndex + 1);
+		System.out.println(str);
 	}
 }
