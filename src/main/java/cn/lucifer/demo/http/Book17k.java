@@ -43,7 +43,7 @@ public class Book17k {
 
 	protected final String bookIndexPageUri = baseUrl + "/list/1470.html";
 	protected final String filePath = "results/桐宫之囚.txt";
-	protected final String firstLine = "桐宫之囚\n作者：阿菩";
+	protected final String firstLine = "桐宫之囚\r\n作者：阿菩";
 
 	private int timeoutMillis = 300000;
 
@@ -69,7 +69,7 @@ public class Book17k {
 				juan = element.text();
 				System.out.println("juan=\t" + juan);
 				writer.write(juan);
-				writer.write("\n\n");
+				writer.write("\r\n\r\n");
 			} else if (element.hasClass("con")) {
 				Elements links = element.select("a");
 				for (Element link : links) {
@@ -81,7 +81,7 @@ public class Book17k {
 					IOUtils.write(juan, writer);
 					writer.write(' ');
 					writer.write(title);
-					writer.write('\n');
+					writer.write("\r\n");
 
 					parseBookChapterPage(href, writer);
 				}
@@ -109,11 +109,11 @@ public class Book17k {
 
 				// System.out.println(textNode.text());
 				writer.write(text);
-				writer.write("\n");
+				writer.write("\r\n");
 			}
 		}
 
-		writer.write("\n\n\n");
+		writer.write("\r\n\r\n\r\n");
 		writer.flush();
 	}
 
