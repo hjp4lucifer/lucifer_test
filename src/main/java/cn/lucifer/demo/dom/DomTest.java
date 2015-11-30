@@ -42,7 +42,6 @@ public class DomTest {
 		NodeList nl = doc.getElementsByTagName("body");
 		for (int i = 0; i < nl.getLength(); i++) {
 			Node node = nl.item(i);
-			System.out.println(node.getTextContent());
 		}
 	}
 
