@@ -27,7 +27,7 @@ import cn.lucifer.http.HttpHelper;
 import cn.lucifer.http.HttpMethod;
 import cn.lucifer.util.HttpClientHelper;
 
-public class SimpleCommonPicDemo {
+public class Mm131Demo {
 	public static Logger log = Logger.getLogger("lucifer_test");
 
 	final HashMap<String, String> httpHeads = new HashMap<>();
@@ -65,10 +65,18 @@ public class SimpleCommonPicDemo {
 
 	@Test
 	public void test() {
-		String nextUrl;
-		do {
-			nextUrl = parseListView(index_url);
-		} while (null != nextUrl);
+		byte[] respone = HttpClientHelper
+				.httpGet("http://www.mm131.com/", null);
+		Document doc = Jsoup.parse(new String(respone));
+		Elements aArray = doc.select(".main a");
+		for (Element a : aArray) {
+			String href = a.attr("href");
+			log.info("href=\t" + href);
+			if (pageMap.containsKey(href)) {
+				continue;
+			}
+			pageMap.put(href, null);
+		}
 	}
 
 	protected String parseListView(String url) {
@@ -122,8 +130,8 @@ public class SimpleCommonPicDemo {
 			return;
 		}
 		try {
-			byte[] data = HttpHelper.http(imgUrl, HttpMethod.GET,
-					httpHeads, null);
+			byte[] data = HttpHelper.http(imgUrl, HttpMethod.GET, httpHeads,
+					null);
 
 			OutputStream output = new FileOutputStream(file);
 			IOUtils.write(data, output);
