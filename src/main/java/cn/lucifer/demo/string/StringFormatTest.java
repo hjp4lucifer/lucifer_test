@@ -9,6 +9,9 @@ import java.util.Date;
 
 import org.junit.Test;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+
 /**
  * @author Lucifer
  * 
@@ -93,10 +96,10 @@ public class StringFormatTest {
 		ip = "1.";
 		System.out.println(ip.substring(ip.lastIndexOf(".") + 1));
 	}
-	
+
 	@Test
-	public void testPrice(){
-		String unitPrice = "12"; 
+	public void testPrice() {
+		String unitPrice = "12";
 		// 转单位为元
 		if (unitPrice.length() > 2) {
 			unitPrice = new StringBuffer(unitPrice).insert(
@@ -110,5 +113,10 @@ public class StringFormatTest {
 		}
 
 		System.out.println(unitPrice);
+	}
+
+	@Test
+	public void testJSON() {
+		JSONObject jObject = JSON.parseObject("啊哈");
 	}
 }
