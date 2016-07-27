@@ -17,12 +17,15 @@ import org.junit.Test;
 
 public class FindString implements IFind {
 
-	String keyword = "GeoCursorBase";
+	// String keyword = "GeoCursorBase";
+	String keyword = "Charlotte";
 
 	// final String folderPath = "D:/workspace/yinba_web/public/bg/jslib";
-	final String folderPath = "D:/tools/mongodb-src-r2.4.11/mongodb-src-r2.4.11/src";
-	
-	final String fileSuffix = ".cpp";
+	// final String folderPath =
+	// "D:/tools/mongodb-src-r2.4.11/mongodb-src-r2.4.11/src";
+	final String folderPath = "F:/lcf/cartoon";
+
+	final String fileSuffix = ".json";
 
 	@Test
 	public void main() throws IOException {
