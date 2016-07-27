@@ -44,6 +44,7 @@ public class TableSqlBase {
 	protected class FieldInfo {
 		protected String name;
 		protected String columnName;
+		protected String columnType;
 		protected String comment;
 		protected boolean isAutoIncrement;
 		protected String type;
@@ -52,8 +53,9 @@ public class TableSqlBase {
 		 */
 		protected int defaultType;
 
-		public FieldInfo(String name, String columnName, String comment,
-				boolean isAutoIncrement, String type, int defaultType) {
+		public FieldInfo(String name, String columnName, String columnType,
+				String comment, boolean isAutoIncrement, String type,
+				int defaultType) {
 			super();
 			this.name = name;
 			this.columnName = columnName;
@@ -115,6 +117,7 @@ public class TableSqlBase {
 			int fieldIndex = 0;
 			String fieldName = null;
 			String columnName = null;
+			String columnType = null;
 			String fieldTypeName = null;
 			for (int i = 0, len = line.length(); i < len; i++) {
 				if (0 == fieldIndex) {// 字段名
@@ -139,10 +142,10 @@ public class TableSqlBase {
 								break;
 							}
 						}
-						fieldTypeName = line.substring(startIndex, i);
+						columnType = line.substring(startIndex, i);
 						boolean notFind = true;
 						for (Entry<String, String> entry : typeMap.entrySet()) {
-							if (entry.getKey().equals(fieldTypeName)) {
+							if (entry.getKey().equals(columnType)) {
 								fieldTypeName = entry.getValue();
 								log.debug("fieldTypeName=" + fieldTypeName);
 								notFind = false;
@@ -162,8 +165,8 @@ public class TableSqlBase {
 				}
 			}
 
-			FieldInfo info = new FieldInfo(fieldName, columnName, commentStr,
-					isAutoIncrement, fieldTypeName, defaultType);
+			FieldInfo info = new FieldInfo(fieldName, columnName, columnType,
+					commentStr, isAutoIncrement, fieldTypeName, defaultType);
 			fieldList.add(info);
 		}
 	}
