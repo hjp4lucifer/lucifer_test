@@ -92,7 +92,9 @@ public class TableSqlToDao extends TableSqlBase {
 
 	public String getNameInResultSetByType(FieldInfo info) {
 		if ("Date".equals(info.type)) {
-			return "Timestamp";
+			if ("TIMESTAMP".equals(info.columnType)) {
+				return "Timestamp";
+			}
 		}
 		return changeNameForClass(info.type);
 	}
