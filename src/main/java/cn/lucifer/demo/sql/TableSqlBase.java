@@ -36,9 +36,14 @@ public class TableSqlBase {
 
 	protected String tabelName;
 	protected String className;
+	/**
+	 * null表示非简单主键
+	 */
+	protected FieldInfo primaryKey;
 
 	protected class FieldInfo {
 		protected String name;
+		protected String columnName;
 		protected String comment;
 		protected boolean isAutoIncrement;
 		protected String type;
@@ -47,10 +52,11 @@ public class TableSqlBase {
 		 */
 		protected int defaultType;
 
-		public FieldInfo(String name, String comment, boolean isAutoIncrement,
-				String type, int defaultType) {
+		public FieldInfo(String name, String columnName, String comment,
+				boolean isAutoIncrement, String type, int defaultType) {
 			super();
 			this.name = name;
+			this.columnName = columnName;
 			this.comment = comment;
 			this.isAutoIncrement = isAutoIncrement;
 			this.type = type;
@@ -74,6 +80,7 @@ public class TableSqlBase {
 		for (int j = 1; j < sqlLines.size(); j++) {
 			String line = sqlLines.get(j);
 			if (line.contains("PRIMARY KEY")) {
+				processPrimateKey(line);
 				break;
 			}
 			log.debug(line);
@@ -107,6 +114,7 @@ public class TableSqlBase {
 
 			int fieldIndex = 0;
 			String fieldName = null;
+			String columnName = null;
 			String fieldTypeName = null;
 			for (int i = 0, len = line.length(); i < len; i++) {
 				if (0 == fieldIndex) {// 字段名
@@ -118,8 +126,8 @@ public class TableSqlBase {
 								break;
 							}
 						}
-						fieldName = line.substring(startIndex, i);
-						fieldName = changeNameForField(fieldName);
+						columnName = line.substring(startIndex, i);
+						fieldName = changeNameForField(columnName);
 						log.debug("fieldName=" + fieldName);
 						fieldIndex++;
 					}
@@ -154,9 +162,24 @@ public class TableSqlBase {
 				}
 			}
 
-			FieldInfo info = new FieldInfo(fieldName, commentStr,
+			FieldInfo info = new FieldInfo(fieldName, columnName, commentStr,
 					isAutoIncrement, fieldTypeName, defaultType);
 			fieldList.add(info);
+		}
+	}
+
+	protected void processPrimateKey(String line) {
+		String primaryKeyName = line.substring(line.indexOf("`") + 1,
+				line.lastIndexOf("`"));
+		if (primaryKeyName.indexOf(",") > 0) {
+			return;
+		}
+		primaryKeyName = changeNameForField(primaryKeyName);
+		for (FieldInfo info : fieldList) {
+			if (primaryKeyName.equals(info.name)) {
+				primaryKey = info;
+				return;
+			}
 		}
 	}
 
