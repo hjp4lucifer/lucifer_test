@@ -26,6 +26,9 @@ public class TableSqlToDao extends TableSqlBase {
 		builder.append("public class ").append(className)
 				.append("Dao extends BaseDao").append(" {");
 
+		// add
+		generateAdd(builder);
+
 		// getById
 		generateGetById(builder);
 
@@ -35,6 +38,48 @@ public class TableSqlToDao extends TableSqlBase {
 		// end class
 		builder.append("\n}");
 		return builder.toString();
+	}
+
+	/**
+	 * add
+	 * 
+	 * @param builder
+	 */
+	protected void generateAdd(StrBuilder builder) {
+		String modelParam = changeNameForField(className);
+		builder.append("\n\n\tpublic int add(").append(className).append(" ")
+				.append(modelParam).append(") {");
+		builder.append("\n\t\t");
+		builder.append("String sql = \"insert into ").append(tabelName)
+				.append("(");
+		StrBuilder columnNames = new StrBuilder();
+		StrBuilder values = new StrBuilder();
+		StrBuilder getter = new StrBuilder();
+		boolean isNotFirst = false;
+		for (FieldInfo info : fieldList) {
+			if (info.isAutoIncrement) {
+				continue;
+			}
+			if (isNotFirst) {
+				columnNames.append(",");
+				values.append(",");
+			} else {
+				isNotFirst = true;
+			}
+			columnNames.append(info.columnName);
+			values.append("?");
+			getter.append(", ").append(modelParam).append(".get")
+					.append(changeNameForClass(info.name)).append("()");
+		}
+
+		builder.append(columnNames).append(") values(").append(values)
+				.append(")\";");
+
+		builder.append("\n\t\tlog.debug(sql);");
+		builder.append("\n\t\treturn getJdbcTemplate().update(sql, rowMapper")
+				.append(getter).append(");");
+
+		builder.append("\n\t}");
 	}
 
 	/**
