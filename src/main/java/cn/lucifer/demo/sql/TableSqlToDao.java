@@ -76,7 +76,7 @@ public class TableSqlToDao extends TableSqlBase {
 				.append(")\";");
 
 		builder.append("\n\t\tlog.debug(sql);");
-		builder.append("\n\t\treturn getJdbcTemplate().update(sql, rowMapper")
+		builder.append("\n\t\treturn getJdbcTemplate().update(sql")
 				.append(getter).append(");");
 
 		builder.append("\n\t}");
