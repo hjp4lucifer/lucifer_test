@@ -126,11 +126,37 @@ public class TimeDemo {
 		System.out.println(day);
 		return (int) day;
 	}
-	
+
 	@Test
-	public void testCalendar(){
+	public void testCalendar() {
 		Calendar c = Calendar.getInstance();
 		c.set(Calendar.HOUR_OF_DAY, 24);
 		System.out.println(timeFormat.format(c.getTime()));
+	}
+
+	@Test
+	public void testGetDayIndex() {
+		long dayEndTime = System.currentTimeMillis();
+		long dayIndexCached = 0;
+		long ONE_DAY_MILLISECONDS = 24 * 3600 * 1000;
+		long ONE_HOUR_MILLISECONDS = 3600000;
+		long now = System.currentTimeMillis();
+		if (now >= dayEndTime) {
+			Calendar c = Calendar.getInstance();
+			if (c.get(Calendar.HOUR_OF_DAY)<4) {
+				c.setTimeInMillis(now - 10 * ONE_HOUR_MILLISECONDS);
+			}
+			c.set(Calendar.MINUTE, 0);
+			c.set(Calendar.SECOND, 0);
+			c.set(Calendar.MILLISECOND, 0);
+			c.set(Calendar.HOUR_OF_DAY, 4);
+			dayEndTime = c.getTimeInMillis() + ONE_DAY_MILLISECONDS;
+			dayIndexCached = dayEndTime / ONE_DAY_MILLISECONDS;
+		}
+
+		System.out.println(dayEndTime);
+		System.out.println(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
+				.format(new Date(dayEndTime)));
+		System.out.println(dayIndexCached);
 	}
 }

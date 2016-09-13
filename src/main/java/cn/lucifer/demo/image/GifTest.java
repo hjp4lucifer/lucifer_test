@@ -13,6 +13,7 @@ import javax.imageio.ImageIO;
 import org.junit.Test;
 
 import cn.lucifer.image.gif.AnimatedGifEncoder;
+import cn.lucifer.util.ImageUtils;
 
 /**
  * @author Lucifer
@@ -20,7 +21,7 @@ import cn.lucifer.image.gif.AnimatedGifEncoder;
  */
 public class GifTest {
 	@Test
-	public void testMain(String[] args) {
+	public void testMain() {
 		File directory = new File(
 				"C:/Users/Lucifer/Pictures/2011上海车展/世爵车模 thais");
 		if (!directory.isDirectory()) {
@@ -58,5 +59,16 @@ public class GifTest {
 
 		end = System.currentTimeMillis();
 		System.out.println(String.format("used time : %d", (end - start)));
+	}
+
+	@Test
+	public void testDecodeGif() throws IOException {
+		String path = "C:/test/111/f216f98d7d5a82a73bee7bb90bdb81ba_stamp.gif";
+		BufferedImage image = ImageIO.read(new File(path));
+		System.out.println(String.format("w=%d, h=%d", image.getWidth(),
+				image.getHeight()));
+		File to = new File("C:/test/111/out.jpg");
+		to.delete();
+		ImageUtils.crop(image, to , 0, 0, image.getWidth(), image.getHeight());
 	}
 }

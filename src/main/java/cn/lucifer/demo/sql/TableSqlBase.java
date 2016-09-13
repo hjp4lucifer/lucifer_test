@@ -101,7 +101,7 @@ public class TableSqlBase {
 			}
 
 			boolean isAutoIncrement = false;
-			if (line.contains(" AUTO_INCREMENT ")) {
+			if (line.contains(" AUTO_INCREMENT")) {
 				isAutoIncrement = true;
 			}
 
@@ -110,7 +110,7 @@ public class TableSqlBase {
 				defaultType = 1;
 			} else if (line.contains(" DEFAULT '")) {
 				defaultType = 10;
-			} else if (line.contains(" DEFAULT CURRENT_TIMESTAMP ")) {
+			} else if (line.contains(" DEFAULT CURRENT_TIMESTAMP")) {
 				defaultType = 2;
 			}
 

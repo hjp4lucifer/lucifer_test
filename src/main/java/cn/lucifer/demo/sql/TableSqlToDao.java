@@ -60,6 +60,9 @@ public class TableSqlToDao extends TableSqlBase {
 			if (info.isAutoIncrement) {
 				continue;
 			}
+			if (info.defaultType == 2) {
+				continue;
+			}
 			if (isNotFirst) {
 				columnNames.append(",");
 				values.append(",");

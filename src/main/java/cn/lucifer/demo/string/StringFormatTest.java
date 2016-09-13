@@ -23,6 +23,8 @@ public class StringFormatTest {
 		String name = null;
 		boolean is = false;
 		System.out.println(String.format("aa %s , %b", name, is));
+		
+		System.out.println(String.format("%02X ",10));
 	}
 
 	@Test

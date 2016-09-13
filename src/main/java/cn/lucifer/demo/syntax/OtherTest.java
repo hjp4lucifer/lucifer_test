@@ -19,18 +19,18 @@ public class OtherTest {
 	@Test
 	public void testOr() {
 		boolean bln = false;
-		bln |= false; 
+		bln |= false;
 		System.out.println(bln);
-		bln |= true; 
+		bln |= true;
 		System.out.println(bln);
-		bln |= false; 
+		bln |= false;
 		System.out.println(bln);
-		bln |= true; 
+		bln |= true;
 		System.out.println(bln);
 	}
 
 	@Test
-	public void testSwitch(){
+	public void testSwitch() {
 		int type = 7;
 		switch (type) {
 		case 7:
@@ -45,5 +45,12 @@ public class OtherTest {
 			System.out.println("default");
 			break;
 		}
+	}
+
+	@Test
+	public void testLong() {
+		Long l1 = new Long(1);
+		Long l2 = new Long(1);
+		System.out.println(l1 == l2);
 	}
 }
