@@ -22,7 +22,11 @@ public class TableSqlToDao extends TableSqlBase {
 		builder.append("import java.sql.ResultSet;\n");
 		builder.append("import java.sql.SQLException;\n");
 
-		builder.append("\n\n@Repository\n");
+		builder.append("\n\n");
+		if (null != tableComment) {
+			builder.append("/**\n * ").append(tableComment).append("\n */\n");
+		}
+		builder.append("@Repository\n");
 		builder.append("public class ").append(className)
 				.append("Dao extends BaseDao").append(" {");
 

@@ -17,6 +17,9 @@ public class TableSqlToModel extends TableSqlBase {
 		parseSql(file);
 
 		StrBuilder builder = new StrBuilder();
+		if (null != tableComment) {
+			builder.append("/**\n * ").append(tableComment).append("\n */\n");
+		}
 		builder.append("public class ").append(className).append(" {");
 
 		for (FieldInfo info : fieldList) {

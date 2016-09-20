@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -32,10 +33,13 @@ public class TableSqlBase {
 		typeMap.put("DOUBLE", "double");
 		typeMap.put("SMALLINT", "int");
 		typeMap.put("TEXT", "String");
+		typeMap.put("DATE", "Date");
 	}
 
 	protected String tabelName;
 	protected String className;
+	protected String tableComment;
+
 	/**
 	 * null表示非简单主键
 	 */
@@ -83,6 +87,14 @@ public class TableSqlBase {
 			String line = sqlLines.get(j);
 			if (line.contains("PRIMARY KEY")) {
 				processPrimateKey(line);
+				for (j++; j < sqlLines.size(); j++) {
+					// find table comment
+					line = sqlLines.get(j);
+					if (line.startsWith("COMMENT=")) {
+						tableComment = StringUtils.trimToNull(line.substring(
+								line.indexOf("'") + 1, line.lastIndexOf("'")));
+					}
+				}
 				break;
 			}
 			log.debug(line);

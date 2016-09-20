@@ -115,4 +115,5 @@ public class NumberTest {
 		}
 		return sum;
 	}
+
 }
