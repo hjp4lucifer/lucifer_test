@@ -33,6 +33,9 @@ public class TableSqlToDao extends TableSqlBase {
 		// add
 		generateAdd(builder);
 
+		// update
+		generateUpdate(builder);
+
 		// getById
 		generateGetById(builder);
 
@@ -81,6 +84,50 @@ public class TableSqlToDao extends TableSqlBase {
 
 		builder.append(columnNames).append(") values(").append(values)
 				.append(")\";");
+
+		builder.append("\n\t\tlog.debug(sql);");
+		builder.append("\n\t\treturn getJdbcTemplate().update(sql")
+				.append(getter).append(");");
+
+		builder.append("\n\t}");
+	}
+
+	/**
+	 * update
+	 * 
+	 * @param builder
+	 */
+	protected void generateUpdate(StrBuilder builder) {
+		String modelParam = changeNameForField(className);
+		builder.append("\n\n\tpublic int update(").append(className)
+				.append(" ").append(modelParam).append(") {");
+		builder.append("\n\t\t");
+		builder.append("String sql = \"update ").append(tabelName)
+				.append(" set ");
+
+		StrBuilder getter = new StrBuilder();
+		boolean isNotFirst = false;
+		for (FieldInfo info : fieldList) {
+			if (info.isPrimaryKey) {
+				continue;
+			}
+			if (info.defaultType == 2) {
+				continue;
+			}
+			if (isNotFirst) {
+				builder.append(",");
+			} else {
+				isNotFirst = true;
+			}
+			builder.append(info.columnName).append("=").append("?");
+			getter.append(", ").append(modelParam).append(".get")
+					.append(changeNameForClass(info.name)).append("()");
+		}
+
+		builder.append(" where ").append(primaryKey.columnName).append("=?");
+		getter.append(", ").append(modelParam).append(".get")
+				.append(changeNameForClass(primaryKey.name)).append("()");
+		builder.append("\";");
 
 		builder.append("\n\t\tlog.debug(sql);");
 		builder.append("\n\t\treturn getJdbcTemplate().update(sql")

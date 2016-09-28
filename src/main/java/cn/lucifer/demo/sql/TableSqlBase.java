@@ -56,6 +56,8 @@ public class TableSqlBase {
 		 * 0没默认值, 1默认NULL, 2CURRENT_TIMESTAMP, 10除外
 		 */
 		protected int defaultType;
+		
+		protected boolean isPrimaryKey;
 
 		public FieldInfo(String name, String columnName, String columnType,
 				String comment, boolean isAutoIncrement, String type,
@@ -63,6 +65,7 @@ public class TableSqlBase {
 			super();
 			this.name = name;
 			this.columnName = columnName;
+			this.columnType = columnType;
 			this.comment = comment;
 			this.isAutoIncrement = isAutoIncrement;
 			this.type = type;
@@ -193,6 +196,7 @@ public class TableSqlBase {
 		for (FieldInfo info : fieldList) {
 			if (primaryKeyName.equals(info.name)) {
 				primaryKey = info;
+				info.isPrimaryKey = true;
 				return;
 			}
 		}
