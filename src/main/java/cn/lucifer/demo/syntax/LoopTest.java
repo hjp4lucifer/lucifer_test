@@ -23,4 +23,18 @@ public class LoopTest {
 		String[] str = "12,4,63".split(",");
 		System.out.println(str.length);
 	}
+
+	@Test
+	public void testBreak() {
+		int i = 0, j = 0;
+		abc: for (i = 0; i < 5000; i++) {
+			def: for (j = 10000; j < 150000; j++) {
+				if (i == 3 && j == 10003) {
+					break abc;
+				}
+			}
+		}
+		System.out.println(i + "," + j);
+		
+	}
 }
