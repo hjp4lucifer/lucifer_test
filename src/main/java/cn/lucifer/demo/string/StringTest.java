@@ -6,6 +6,7 @@ package cn.lucifer.demo.string;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
@@ -65,7 +66,7 @@ public class StringTest {
 		SimpleDateFormat format = new SimpleDateFormat(
 				"yyyy-MM-dd HH:mm:ss.SSS");
 		System.out.println(format.format(new Date(time)));
-		
+
 		System.out.println(format.parse("2015-09-10 11:00:00.000").getTime());
 	}
 
@@ -109,5 +110,12 @@ public class StringTest {
 		int lastIndex = str.lastIndexOf(":");
 		str = str.substring(lastIndex + 1);
 		System.out.println(str);
+	}
+
+	@Test
+	public void testDateFormater() {
+		SimpleDateFormat format = new SimpleDateFormat("hh-mm:ss");
+		long time = 3663000L;
+		System.out.println(format.format(time));
 	}
 }

@@ -17,6 +17,11 @@ public class TableSqlToModel extends TableSqlBase {
 		parseSql(file);
 
 		StrBuilder builder = new StrBuilder();
+
+		builder.append("import java.util.Date;\n");
+
+		builder.append("\n\n");
+		
 		if (null != tableComment) {
 			builder.append("/**\n * ").append(tableComment).append("\n */\n");
 		}

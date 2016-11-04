@@ -21,6 +21,7 @@ public class TableSqlToDao extends TableSqlBase {
 		builder.append("import org.springframework.jdbc.core.RowMapper;\n");
 		builder.append("import java.sql.ResultSet;\n");
 		builder.append("import java.sql.SQLException;\n");
+		builder.append("import java.util.Date;\n");
 
 		builder.append("\n\n");
 		if (null != tableComment) {
