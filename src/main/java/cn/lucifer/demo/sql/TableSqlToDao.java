@@ -146,13 +146,15 @@ public class TableSqlToDao extends TableSqlBase {
 		if (null != primaryKey
 				&& ("long".equals(primaryKey.type) || "int"
 						.equals(primaryKey.type))) {
-			builder.append("\n\n\tpublic ").append(className)
-					.append(" getById(").append(primaryKey.type)
-					.append(" id) {");
+			String idFieldName = changeNameForField(primaryKey.columnName);
+			builder.append("\n\n\tpublic ").append(className).append(" getBy")
+					.append(changeNameForClass(idFieldName)).append("(")
+					.append(primaryKey.type).append(" ").append(idFieldName)
+					.append(") {");
 			builder.append("\n\t\t");
 			builder.append(String.format(
-					"String sql = \"select * from %s where %s=\" + id;",
-					tabelName, primaryKey.columnName));
+					"String sql = \"select * from %s where %s=\" + %s;",
+					tabelName, primaryKey.columnName, idFieldName));
 			builder.append("\n\t\tlog.debug(sql);");
 			builder.append("\n\t\treturn getJdbcTemplate().queryForObject(sql, rowMapper);");
 
