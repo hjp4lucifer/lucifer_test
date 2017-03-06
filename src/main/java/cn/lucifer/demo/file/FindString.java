@@ -18,14 +18,17 @@ import org.junit.Test;
 public class FindString implements IFind {
 
 	// String keyword = "GeoCursorBase";
-	String keyword = "Charlotte";
+	String keyword = "目前可领取的手游礼包列表";
 
 	// final String folderPath = "D:/workspace/yinba_web/public/bg/jslib";
 	// final String folderPath =
 	// "D:/tools/mongodb-src-r2.4.11/mongodb-src-r2.4.11/src";
-	final String folderPath = "F:/lcf/cartoon";
+	// final String folderPath = "F:/lcf/cartoon";
+	// final String folderPath =
+	// "E:/dev_tools/apache/spark/spark-2.0.2-bin-hadoop2.7/examples/src/main/java/org/apache/spark/examples";
+	final String folderPath = "D:/workspace/5253";
 
-	final String fileSuffix = ".json";
+	final String fileSuffix = ".java";
 
 	@Test
 	public void main() throws IOException {
@@ -41,12 +44,10 @@ public class FindString implements IFind {
 			if (line.startsWith("<title>")) {
 				// System.out.println(file.getPath());
 				// System.out.println(line);
-				title = line.substring("<title>".length(),
-						line.lastIndexOf("</title>"));
+				title = line.substring("<title>".length(), line.lastIndexOf("</title>"));
 			}
 			if (line.indexOf(keyword) > -1) {
-				System.out.println(file.getPath() + "\t" + title + "\t\t"
-						+ line);
+				System.out.println(file.getPath() + "\t" + title + "\t\t" + line);
 				break;
 			}
 		}
@@ -119,8 +120,7 @@ public class FindString implements IFind {
 				find(file, iFind);
 				continue;
 			}
-			BufferedReader reader = new BufferedReader(new InputStreamReader(
-					new FileInputStream(file), "gbk"));
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "utf-8"));
 			List<String> lines = IOUtils.readLines(reader);
 			IOUtils.closeQuietly(reader);
 

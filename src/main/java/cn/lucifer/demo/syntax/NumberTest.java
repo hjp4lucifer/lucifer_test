@@ -102,6 +102,7 @@ public class NumberTest {
 			sum += count;
 		}
 		System.out.println(sum);
+		
 	}
 
 	public int zuhe(int n, int m) {

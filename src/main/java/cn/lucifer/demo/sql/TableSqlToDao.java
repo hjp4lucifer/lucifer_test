@@ -23,13 +23,22 @@ public class TableSqlToDao extends TableSqlBase {
 		builder.append("import java.sql.SQLException;\n");
 		builder.append("import java.util.Date;\n");
 
+		// BLOB
+		if (checkFieldType("BLOB")) {
+			builder.append("\n");
+			builder.append("import org.apache.commons.io.IOUtils;\n");
+			builder.append("import java.io.IOException;\n");
+			builder.append("import java.io.ByteArrayOutputStream;\n");
+			builder.append("import java.io.InputStream;\n");
+			builder.append("import java.sql.Blob;\n");
+		}
+
 		builder.append("\n\n");
 		if (null != tableComment) {
 			builder.append("/**\n * ").append(tableComment).append("\n */\n");
 		}
 		builder.append("@Repository\n");
-		builder.append("public class ").append(className)
-				.append("Dao extends BaseDao").append(" {");
+		builder.append("public class ").append(className).append("Dao extends BaseDao").append(" {");
 
 		// add
 		generateAdd(builder);
@@ -55,11 +64,9 @@ public class TableSqlToDao extends TableSqlBase {
 	 */
 	protected void generateAdd(StrBuilder builder) {
 		String modelParam = changeNameForField(className);
-		builder.append("\n\n\tpublic int add(").append(className).append(" ")
-				.append(modelParam).append(") {");
+		builder.append("\n\n\tpublic int add(").append(className).append(" ").append(modelParam).append(") {");
 		builder.append("\n\t\t");
-		builder.append("String sql = \"insert into ").append(tabelName)
-				.append("(");
+		builder.append("String sql = \"insert into ").append(tabelName).append("(");
 		StrBuilder columnNames = new StrBuilder();
 		StrBuilder values = new StrBuilder();
 		StrBuilder getter = new StrBuilder();
@@ -79,16 +86,13 @@ public class TableSqlToDao extends TableSqlBase {
 			}
 			columnNames.append(info.columnName);
 			values.append("?");
-			getter.append(", ").append(modelParam).append(".get")
-					.append(changeNameForClass(info.name)).append("()");
+			getter.append(", ").append(modelParam).append(".get").append(changeNameForClass(info.name)).append("()");
 		}
 
-		builder.append(columnNames).append(") values(").append(values)
-				.append(")\";");
+		builder.append(columnNames).append(") values(").append(values).append(")\";");
 
 		builder.append("\n\t\tlog.debug(sql);");
-		builder.append("\n\t\treturn getJdbcTemplate().update(sql")
-				.append(getter).append(");");
+		builder.append("\n\t\treturn getJdbcTemplate().update(sql").append(getter).append(");");
 
 		builder.append("\n\t}");
 	}
@@ -99,12 +103,13 @@ public class TableSqlToDao extends TableSqlBase {
 	 * @param builder
 	 */
 	protected void generateUpdate(StrBuilder builder) {
+		if (null == primaryKey) {
+			return;
+		}
 		String modelParam = changeNameForField(className);
-		builder.append("\n\n\tpublic int update(").append(className)
-				.append(" ").append(modelParam).append(") {");
+		builder.append("\n\n\tpublic int update(").append(className).append(" ").append(modelParam).append(") {");
 		builder.append("\n\t\t");
-		builder.append("String sql = \"update ").append(tabelName)
-				.append(" set ");
+		builder.append("String sql = \"update ").append(tabelName).append(" set ");
 
 		StrBuilder getter = new StrBuilder();
 		boolean isNotFirst = false;
@@ -121,18 +126,15 @@ public class TableSqlToDao extends TableSqlBase {
 				isNotFirst = true;
 			}
 			builder.append(info.columnName).append("=").append("?");
-			getter.append(", ").append(modelParam).append(".get")
-					.append(changeNameForClass(info.name)).append("()");
+			getter.append(", ").append(modelParam).append(".get").append(changeNameForClass(info.name)).append("()");
 		}
 
 		builder.append(" where ").append(primaryKey.columnName).append("=?");
-		getter.append(", ").append(modelParam).append(".get")
-				.append(changeNameForClass(primaryKey.name)).append("()");
+		getter.append(", ").append(modelParam).append(".get").append(changeNameForClass(primaryKey.name)).append("()");
 		builder.append("\";");
 
 		builder.append("\n\t\tlog.debug(sql);");
-		builder.append("\n\t\treturn getJdbcTemplate().update(sql")
-				.append(getter).append(");");
+		builder.append("\n\t\treturn getJdbcTemplate().update(sql").append(getter).append(");");
 
 		builder.append("\n\t}");
 	}
@@ -143,18 +145,13 @@ public class TableSqlToDao extends TableSqlBase {
 	 * @param builder
 	 */
 	protected void generateGetById(StrBuilder builder) {
-		if (null != primaryKey
-				&& ("long".equals(primaryKey.type) || "int"
-						.equals(primaryKey.type))) {
+		if (null != primaryKey && ("long".equals(primaryKey.type) || "int".equals(primaryKey.type))) {
 			String idFieldName = changeNameForField(primaryKey.columnName);
-			builder.append("\n\n\tpublic ").append(className).append(" getBy")
-					.append(changeNameForClass(idFieldName)).append("(")
-					.append(primaryKey.type).append(" ").append(idFieldName)
-					.append(") {");
+			builder.append("\n\n\tpublic ").append(className).append(" getBy").append(changeNameForClass(idFieldName))
+					.append("(").append(primaryKey.type).append(" ").append(idFieldName).append(") {");
 			builder.append("\n\t\t");
-			builder.append(String.format(
-					"String sql = \"select * from %s where %s=\" + %s;",
-					tabelName, primaryKey.columnName, idFieldName));
+			builder.append(String.format("String sql = \"select * from %s where %s=\" + %s;", tabelName,
+					primaryKey.columnName, idFieldName));
 			builder.append("\n\t\tlog.debug(sql);");
 			builder.append("\n\t\treturn getJdbcTemplate().queryForObject(sql, rowMapper);");
 
@@ -168,28 +165,72 @@ public class TableSqlToDao extends TableSqlBase {
 	 * @param builder
 	 */
 	protected void generateRowMapper(StrBuilder builder) {
+		int tCount = 1;
 		builder.append("\n\n\t");
-		builder.append(String.format(
-				"protected RowMapper<%s> rowMapper = new RowMapper<%s>() {",
-				className, className));
+		builder.append(
+				String.format("protected RowMapper<%s> rowMapper = new RowMapper<%s>() {", className, className));
 		builder.append("\n\n\t\t@Override");
-		builder.append("\n\t\t");
-		builder.append(String
-				.format("public %s mapRow(ResultSet rs, int rowNum) throws SQLException {",
-						className));
-		builder.append("\n\t\t\t");
-		builder.append(String.format("%s model = new %s();", className,
-				className));
+
+		tCount++;
+		newline(builder, tCount);
+		// builder.append("\n\t\t");
+		builder.append(String.format("public %s mapRow(ResultSet rs, int rowNum) throws SQLException {", className));
+		tCount++;
+		// builder.append("\n\t\t\t");
+		newline(builder, tCount);
+		builder.append(String.format("%s model = new %s();", className, className));
 		for (FieldInfo info : fieldList) {
-			builder.append("\n\t\t\t");
-			builder.append(String.format("model.set%s(rs.get%s(\"%s\"));",
-					changeNameForClass(info.name),
+			// builder.append("\n\t\t\t");
+			newline(builder, tCount);
+			if (info.columnType.equals("BLOB")) {
+				builder.append("{");
+				tCount++;
+
+				newline(builder, tCount);
+				builder.append(String.format("Blob blob = rs.getBlob(\"%s\");", info.columnName));
+				newline(builder, tCount);
+				builder.append("InputStream input = blob.getBinaryStream();");
+				newline(builder, tCount);
+				builder.append("ByteArrayOutputStream output = new ByteArrayOutputStream();");
+				newline(builder, tCount);
+				builder.append("try {");
+
+				tCount++;
+				newline(builder, tCount);
+				builder.append("IOUtils.copy(input, output);");
+				newline(builder, tCount);
+				builder.append("byte[] buf = output.toByteArray();");
+				newline(builder, tCount);
+				builder.append(String.format("model.set%s(buf);", changeNameForClass(info.name)));
+
+				tCount--;
+				newline(builder, tCount);
+				builder.append("} catch (IOException e) {");
+				newline(builder, tCount);
+				builder.append("} finally {");
+				newline(builder, tCount + 1);
+				builder.append("IOUtils.closeQuietly(input);");
+				newline(builder, tCount);
+				builder.append("}");
+
+				tCount--;
+				newline(builder, tCount);
+				builder.append("}");
+				continue;
+			}
+			builder.append(String.format("model.set%s(rs.get%s(\"%s\"));", changeNameForClass(info.name),
 					getNameInResultSetByType(info), info.columnName));
 		}
-		builder.append("\n\t\t\treturn model;");
-		builder.append("\n\t\t}");
 
-		builder.append("\n\t};");
+		newline(builder, tCount);
+		builder.append("return model;");
+		tCount--;
+		newline(builder, tCount);
+		builder.append("}");
+
+		tCount--;
+		newline(builder, tCount);
+		builder.append("};");
 	}
 
 	public String getNameInResultSetByType(FieldInfo info) {

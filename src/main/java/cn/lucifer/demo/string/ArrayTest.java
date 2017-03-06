@@ -8,6 +8,8 @@ import java.util.Collection;
 
 import org.junit.Test;
 
+import com.alibaba.fastjson.JSON;
+
 /**
  * @author Lucifer
  * 
@@ -73,12 +75,10 @@ public class ArrayTest {
 
 	@Test
 	public void testArrayListToArray(){
-		ArrayList<Object> args = new ArrayList<Object>();
+		ArrayList<String> args = new ArrayList<>();
 		args.add("hi");
 		args.add("my");
-		Object[] objs = args.toArray();
-		for (Object obj : objs) {
-			System.out.println(obj);
-		}
+		String[] strArray = args.toArray(new String[0]);
+		System.out.println(JSON.toJSONString(strArray));
 	}
 }

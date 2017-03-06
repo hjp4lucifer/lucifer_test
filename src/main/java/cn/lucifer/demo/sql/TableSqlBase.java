@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.text.StrBuilder;
 import org.apache.log4j.Logger;
 
 /**
@@ -34,12 +35,13 @@ public class TableSqlBase {
 		typeMap.put("SMALLINT", "int");
 		typeMap.put("TEXT", "String");
 		typeMap.put("DATE", "Date");
+		typeMap.put("BLOB", "byte[]");
 	}
 
 	protected String tabelName;
 	protected String className;
 	protected String tableComment;
-
+	
 	/**
 	 * null表示非简单主键
 	 */
@@ -56,12 +58,11 @@ public class TableSqlBase {
 		 * 0没默认值, 1默认NULL, 2CURRENT_TIMESTAMP, 10除外
 		 */
 		protected int defaultType;
-		
+
 		protected boolean isPrimaryKey;
 
-		public FieldInfo(String name, String columnName, String columnType,
-				String comment, boolean isAutoIncrement, String type,
-				int defaultType) {
+		public FieldInfo(String name, String columnName, String columnType, String comment, boolean isAutoIncrement,
+				String type, int defaultType) {
 			super();
 			this.name = name;
 			this.columnName = columnName;
@@ -75,12 +76,20 @@ public class TableSqlBase {
 	}
 
 	protected LinkedList<FieldInfo> fieldList = new LinkedList<>();
+	
+	protected boolean checkFieldType(String columnType){
+		for (FieldInfo f : fieldList) {
+			if (f.columnType.equals(columnType)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	public void parseSql(File file) throws IOException {
 		List<String> sqlLines = FileUtils.readLines(file);
 		tabelName = sqlLines.get(0);
-		tabelName = tabelName.substring(tabelName.indexOf("`") + 1,
-				tabelName.lastIndexOf("`"));
+		tabelName = tabelName.substring(tabelName.indexOf("`") + 1, tabelName.lastIndexOf("`"));
 		log.debug("tabelName=" + tabelName);
 
 		className = changeNameForClass(tabelName);
@@ -94,8 +103,8 @@ public class TableSqlBase {
 					// find table comment
 					line = sqlLines.get(j);
 					if (line.startsWith("COMMENT=")) {
-						tableComment = StringUtils.trimToNull(line.substring(
-								line.indexOf("'") + 1, line.lastIndexOf("'")));
+						tableComment = StringUtils
+								.trimToNull(line.substring(line.indexOf("'") + 1, line.lastIndexOf("'")));
 					}
 				}
 				break;
@@ -106,8 +115,7 @@ public class TableSqlBase {
 			String commentStr = null;
 			if (commentIndex > 0) {// 有注释
 				commentStr = line.substring(commentIndex);
-				commentStr = commentStr.substring(commentStr.indexOf("'") + 1,
-						commentStr.lastIndexOf("'"));
+				commentStr = commentStr.substring(commentStr.indexOf("'") + 1, commentStr.lastIndexOf("'"));
 				int endIndex = commentStr.indexOf(" COLLATE");
 				if (endIndex > 0) {
 					commentStr = commentStr.substring(0, endIndex - 1);
@@ -168,8 +176,7 @@ public class TableSqlBase {
 							}
 						}
 						if (notFind) {
-							throw new RuntimeException("No map type="
-									+ fieldTypeName);
+							throw new RuntimeException("No map type=" + fieldTypeName);
 						}
 						fieldIndex++;
 					}
@@ -180,15 +187,14 @@ public class TableSqlBase {
 				}
 			}
 
-			FieldInfo info = new FieldInfo(fieldName, columnName, columnType,
-					commentStr, isAutoIncrement, fieldTypeName, defaultType);
+			FieldInfo info = new FieldInfo(fieldName, columnName, columnType, commentStr, isAutoIncrement,
+					fieldTypeName, defaultType);
 			fieldList.add(info);
 		}
 	}
 
 	protected void processPrimateKey(String line) {
-		String primaryKeyName = line.substring(line.indexOf("`") + 1,
-				line.lastIndexOf("`"));
+		String primaryKeyName = line.substring(line.indexOf("`") + 1, line.lastIndexOf("`"));
 		if (primaryKeyName.indexOf(",") > 0) {
 			return;
 		}
@@ -231,4 +237,18 @@ public class TableSqlBase {
 		}
 		return new String(array, 0, i);
 	}
+
+	/**
+	 * 
+	 * @param tCount
+	 *            \t的数量
+	 */
+	protected void newline(StrBuilder builder, int tCount) {
+		builder.append('\n');
+		for (int i = 0; i < tCount; i++) {
+			builder.append('\t');
+		}
+	}
+	
+	
 }
