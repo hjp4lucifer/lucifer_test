@@ -12,6 +12,5 @@ public class Durl {
 	public long length;
 	public long size;
 	public String url;
-	
 	public List<URL> backup_url;
 }

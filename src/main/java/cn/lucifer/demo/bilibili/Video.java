@@ -1,6 +1,9 @@
 package cn.lucifer.demo.bilibili;
 
+import java.util.List;
+
 import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamImplicit;
 
 /**
  * http://interface.bilibili.com/playurl?sign=399564451373d1ef1273185cc53e8550&cid=14788672&from=miniplay&player=1
@@ -34,5 +37,6 @@ public class Video {
 	 */
 	public String seek_type;
 	
-	public Durl durl;
+	@XStreamImplicit(itemFieldName = "durl")
+	public List<Durl> durl;
 }

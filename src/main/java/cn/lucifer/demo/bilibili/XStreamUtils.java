@@ -8,7 +8,9 @@ public class XStreamUtils {
 	static {
 		xstream = new XStream();
 		xstream.ignoreUnknownElements();
+
 		xstream.processAnnotations(Video.class);
+		//xstream.addImplicitCollection(Video.class, "durl", Durl.class);
 	}
 
 	public static Video readVideo(String xml) {

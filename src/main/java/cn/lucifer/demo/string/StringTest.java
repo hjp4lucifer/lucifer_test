@@ -11,6 +11,8 @@ import java.util.TimeZone;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 
+import cn.lucifer.util.DigestUtils;
+
 /**
  * @author Lucifer
  * 
@@ -63,8 +65,7 @@ public class StringTest {
 	@Test
 	public void testTime() throws ParseException {
 		long time = 1441854000000L;
-		SimpleDateFormat format = new SimpleDateFormat(
-				"yyyy-MM-dd HH:mm:ss.SSS");
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 		System.out.println(format.format(new Date(time)));
 
 		System.out.println(format.parse("2015-09-10 11:00:00.000").getTime());
@@ -91,8 +92,7 @@ public class StringTest {
 		if (lastIndex > 0) {
 			suffix = fn.substring(lastIndex);
 		}
-		fn = new SimpleDateFormat("yyyyMMddHHmmssSSS").format(new Date())
-				+ suffix;
+		fn = new SimpleDateFormat("yyyyMMddHHmmssSSS").format(new Date()) + suffix;
 		System.out.println(fn);
 		return suffix;
 	}
@@ -117,5 +117,12 @@ public class StringTest {
 		SimpleDateFormat format = new SimpleDateFormat("hh-mm:ss");
 		long time = 3663000L;
 		System.out.println(format.format(time));
+	}
+
+	@Test
+	public void testMd5() {
+		String s = "cid=14830870&ts=1488767209";
+		String sign = DigestUtils.md5DigestAsHex(s.getBytes());
+		System.out.println(sign);
 	}
 }
