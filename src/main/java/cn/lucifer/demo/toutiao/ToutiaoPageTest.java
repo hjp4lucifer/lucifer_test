@@ -2,13 +2,16 @@ package cn.lucifer.demo.toutiao;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.junit.After;
@@ -23,12 +26,12 @@ import cn.lucifer.http.HttpHelper;
 import cn.lucifer.http.HttpMethod;
 
 /**
- * 今日头条分享页抓取视频
+ * 今日头条抓取视频
  * 
  * @author Lucifer
  *
  */
-public class Toutiao365ygPageTest {
+public class ToutiaoPageTest {
 	public static Logger log = Logger.getLogger("lucifer_test");
 
 	final HashMap<String, String> httpHeads = new HashMap<>();
@@ -37,14 +40,7 @@ public class Toutiao365ygPageTest {
 
 	@Before
 	public void setUp() throws Exception {
-		// https://m.365yg.com/group/6393836234984571138/
 		// 获取视频link
-		// http://ib.365yg.com/video/urls/v/1/toutiao/mp4/97d8f99942e440e78fd97c406d304003?r=7508452509702017&s=2109748146&callback=tt_playerghvhb
-		// http://ib.365yg.com/video/urls/v/1/toutiao/mp4/97d8f99942e440e78fd97c406d304003?r=7654481547607905&s=2184463755&callback=tt_playeruptpj
-		// http://ib.365yg.com/video/urls/v/1/toutiao/mp4/97d8f99942e440e78fd97c406d304003?r=7846201734483929&s=460006736&callback=tt_playerobixm
-
-		// http://v3.365yg.com/36f66db486250ba583fec04de095998b/58c646dd/video/m/220a69e7322939a4284a266b6da9e2167ee114409f00002bf56c9f47eb/
-		// http://v6.365yg.com/video/m/220a69e7322939a4284a266b6da9e2167ee114409f00002bf56c9f47eb/?Expires=1489394080&AWSAccessKeyId=qh0h9TdcEMrm1VlR2ad%2F&Signature=gFFzpO2x5kPt7lkqNeSMRmsI5EA%3D
 
 		// http://www.toutiao.com/i6360431282081497602/
 		// http://www.toutiao.com/a6393429145929777409/
@@ -75,7 +71,8 @@ public class Toutiao365ygPageTest {
 
 	@Test
 	public void test() throws Exception {
-		String url = "http://www.365yg.com/group/6382682030328840450/";
+		String url = "http://www.toutiao.com/i6360431282081497602/";
+		url = "http://www.toutiao.com/a6393429145929777409/";
 		byte[] data = HttpHelper.http(url, HttpMethod.GET, httpHeads, null);
 		String html = new String(data);
 		log.debug(html);
@@ -86,6 +83,10 @@ public class Toutiao365ygPageTest {
 
 		String videoUrl = getVideoUrl(videoid);
 		log.info(videoUrl);
+		
+		URL url$ = new URL(videoUrl);
+		File destination = new File("F:/toutiao/" + StringUtils.replaceChars(url$.getPath(), '/', '_') + ".mp4");
+		FileUtils.copyURLToFile(url$, destination);
 	}
 
 	public String getVideoId(String html) throws Exception {
@@ -103,7 +104,7 @@ public class Toutiao365ygPageTest {
 		}
 
 		if (null == str) {
-			throw new Exception("365yg.com改规则了!!!");
+			throw new Exception("头条改规则了!!!");
 		}
 
 		String findStr = "videoid:";
@@ -127,6 +128,8 @@ public class Toutiao365ygPageTest {
 
 	public String getVideoUrl(String videoid) throws Exception {
 		String apiUrl = getVideoApiUrl(videoid);
+		// + "&callback=tt_player" + Integer.toHexString((int) (Math.random() *
+		// 100000)); //这里原本想伪装jsonp, 但json解释有些麻烦, 还是算了...
 		log.info(apiUrl);
 
 		// http://ib.365yg.com/video/urls/v/1/toutiao/mp4/97d8f99942e440e78fd97c406d304003?r=5759517829188027&s=3612680016
@@ -134,12 +137,12 @@ public class Toutiao365ygPageTest {
 
 		JSONObject json = JSON.parseObject(new String(data));
 		if (!new Integer(0).equals(json.getInteger("code"))) {
-			throw new HttpClientException("365yg.com API异常!!!");
+			throw new HttpClientException("头条 API异常!!!");
 		}
 
 		JSONObject jsonData = json.getJSONObject("data");
 		if (jsonData.getInteger("status") != 10) {
-			throw new HttpClientException(String.format("365yg.com 的视频status=(%d)%s", jsonData.getInteger("status"),
+			throw new HttpClientException(String.format("头条 的视频status=(%d)%s", jsonData.getInteger("status"),
 					videoStates.get(jsonData.getInteger("status"))));
 		}
 
@@ -156,7 +159,7 @@ public class Toutiao365ygPageTest {
 			try {
 				lv = Integer.parseInt(definition.substring(0, definition.lastIndexOf("p")));
 			} catch (NumberFormatException e) {
-				throw new Exception("365yg.com 获取视频清晰度的方式变了!!!");
+				throw new Exception("头条 获取视频清晰度的方式变了!!!");
 			}
 			if (lv > highLv) {
 				highVideo = tmpVideo;
@@ -165,7 +168,7 @@ public class Toutiao365ygPageTest {
 		}
 
 		if (null == highVideo) {
-			throw new Exception("365yg.com 获取视频video_list的方式变了!!!");
+			throw new Exception("头条 获取视频video_list的方式变了!!!");
 		}
 
 		return new String(Base64.decodeBase64(highVideo.getString("main_url")));
