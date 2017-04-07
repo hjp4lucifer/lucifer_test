@@ -5,9 +5,11 @@ import static org.junit.Assert.*;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
@@ -22,6 +24,10 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.text.StrBuilder;
 import org.apache.log4j.Logger;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,10 +38,18 @@ import com.alibaba.fastjson.JSONObject;
 import cn.lucifer.http.HttpClientException;
 import cn.lucifer.http.HttpHelper;
 import cn.lucifer.http.HttpMethod;
+import cn.lucifer.model.VideoInfo;
 import cn.lucifer.util.DigestUtils;
 
 public class PageParseTest {
 	public static Logger log = Logger.getLogger("lucifer_test");
+
+	protected VideoInfo videoInfo = new VideoInfo();
+
+	/**
+	 * b站视频类型 1video, 2anime
+	 */
+	protected int vType;
 
 	final HashMap<String, String> httpHeads = new HashMap<>();
 
@@ -69,7 +83,7 @@ public class PageParseTest {
 
 	@After
 	public void tearDown() throws Exception {
-
+		System.out.println(JSON.toJSON(videoInfo));
 	}
 
 	@Test
@@ -85,13 +99,19 @@ public class PageParseTest {
 
 		String url;
 		url = "https://www.bilibili.com/video/av8982798/?tg";
-//		url = "http://bangumi.bilibili.com/anime/5849/play#101637";
+		url = "http://bangumi.bilibili.com/anime/5849/play#101637";
 		String savePath = "F:/bilibili";
 		String subFolderName;
+
+		// 解释视频名称, anime可尝试调用getAnimeSubTitle方法
+		parseSimpleVideoInfo(url);
+
 		if (url.indexOf("video") > 0) {
+			vType = 1;
 			String[] tmp = StringUtils.split(url, '/');
 			subFolderName = savePath + "/video/" + tmp[tmp.length - 2];
 		} else if (url.indexOf("anime") > 0) {
+			vType = 2;
 			String episode_id = url.substring(url.lastIndexOf("#") + 1);
 			subFolderName = savePath + "/anime/" + episode_id;
 		} else {
@@ -109,25 +129,110 @@ public class PageParseTest {
 		long cid = getCid(url);
 		Video video = getVideo(getPlayUrl(cid));
 		for (Durl durl : video.durl) {
-			URL url$ = new URL(durl.url);
-			log.info("download = " + durl.url + " start !!!!");
-			String fn = durl.order + StringUtils.replaceChars(url$.getPath(), '/', '_');
-			File f = new File(folder, fn);
-			if (f.exists()) {
-				log.warn("file=" + f.getAbsolutePath() + " is exists !!!!! ----------");
-				continue;
+			videoInfo.videoUrlList.add(durl.url);
+			videoInfo.duration += durl.length;
+			// download(folder, durl);
+		}
+	}
+
+	@Test
+	public void testParseSimpleVideoInfo() {
+		String url;
+		url = "https://www.bilibili.com/video/av8982798/?tg";
+		// url = "http://bangumi.bilibili.com/anime/5849/play#101637";
+		parseSimpleVideoInfo(url);
+	}
+
+	protected void parseSimpleVideoInfo(String url) {
+		byte[] data;
+		try {
+			data = HttpHelper.http(url, HttpMethod.GET, httpHeads, null);
+
+		} catch (IOException | HttpClientException e) {
+			log.error("", e);
+			return;
+		}
+		String html = new String(data);
+		Document doc = Jsoup.parse(html);
+		Elements title = doc.select(".v-title");
+		videoInfo.title = title.get(0).text();
+
+		Elements metas = doc.select("meta");
+		for (Element m : metas) {
+			if ("description".equalsIgnoreCase(m.attr("name"))) {
+				videoInfo.text = m.attr("content");
+				break;
 			}
-			FileOutputStream outputStream = new FileOutputStream(f);
-			for (int i = 0; i < 10; i++) {
-				try {
-					HttpHelper.http(durl.url, HttpMethod.GET, httpHeads, null, 3600000, null, outputStream, 15000);
-					log.info("download = " + durl.url + " finished !!!!");
-					httpHeads.remove("RANGE");
-					break;
-				} catch (IOException e) {
-					httpHeads.put("RANGE", "bytes=" + f.length() + "-");
-					log.error(String.format("download fail(%d), file length=%d, url=%s ", i, f.length(), durl.url));
-				}
+		}
+
+		String regex = "<script[^>]+>.*?</script>";
+		Pattern expression = Pattern.compile(regex, Pattern.DOTALL);
+		Matcher matcher = expression.matcher(html);
+		String findStr = "wb_img";
+		String str = null;
+		while (matcher.find()) {
+			// log.debug(matcher.group());
+			if (matcher.group().indexOf(findStr) > 0) {
+				str = matcher.group();
+				log.debug(str);
+				break;
+			}
+		}
+
+		if (null == str) {
+			log.warn("b站封面图规则更改了!");
+		} else {
+			int beginIndex = str.indexOf(findStr);
+			int endIndex = StringUtils.indexOf(str, "',", beginIndex);
+			String cover = str.substring(beginIndex + findStr.length(), endIndex);
+			// fix '
+			int tmpIndex = cover.indexOf("'");
+			if (tmpIndex > -1 && tmpIndex < 10) {
+				cover = cover.substring(tmpIndex + 1);
+			}
+			// check http start
+			if (cover.startsWith("//")) {
+				cover = "http:" + cover;
+			}
+			// http://i0.hdslb.com/bfs/bangumi/5bf4ee170c207f0e793c8044bb668c3a2e2d80b6.jpg_124x172.jpg
+			// 这里需要原图的话, 需要去除_124x172.jpg
+			log.debug(cover);
+			videoInfo.cover = cover;
+		}
+	}
+
+	protected String getAnimeSubTitle(String episode_id) {
+		// http://bangumi.bilibili.com/web_api/episode/101637.json
+		String url = String.format("http://bangumi.bilibili.com/web_api/episode/%s.json", episode_id);
+		log.debug(url);
+		try {
+			byte[] data = HttpHelper.http(url, HttpMethod.GET, httpHeads, null);
+		} catch (IOException | HttpClientException e) {
+			log.error("");
+		}
+		return null;
+	}
+
+	protected void download(File folder, Durl durl)
+			throws MalformedURLException, FileNotFoundException, HttpClientException {
+		URL url$ = new URL(durl.url);
+		log.info("download = " + durl.url + " start !!!!");
+		String fn = durl.order + StringUtils.replaceChars(url$.getPath(), '/', '_');
+		File f = new File(folder, fn);
+		if (f.exists()) {
+			log.warn("file=" + f.getAbsolutePath() + " is exists !!!!! ----------");
+			return;
+		}
+		FileOutputStream outputStream = new FileOutputStream(f);
+		for (int i = 0; i < 10; i++) {
+			try {
+				HttpHelper.http(durl.url, HttpMethod.GET, httpHeads, null, 3600000, null, outputStream, 15000);
+				log.info("download = " + durl.url + " finished !!!!");
+				httpHeads.remove("RANGE");
+				break;
+			} catch (IOException e) {
+				httpHeads.put("RANGE", "bytes=" + f.length() + "-");
+				log.error(String.format("download fail(%d), file length=%d, url=%s ", i, f.length(), durl.url));
 			}
 		}
 	}
