@@ -21,6 +21,7 @@ import com.alibaba.fastjson.JSONObject;
 import cn.lucifer.http.HttpClientException;
 import cn.lucifer.http.HttpHelper;
 import cn.lucifer.http.HttpMethod;
+import cn.lucifer.model.VideoInfo;
 
 /**
  * 今日头条分享页抓取视频
@@ -30,6 +31,7 @@ import cn.lucifer.http.HttpMethod;
  */
 public class Toutiao365ygPageTest {
 	public static Logger log = Logger.getLogger("lucifer_test");
+	protected VideoInfo videoInfo = new VideoInfo();
 
 	final HashMap<String, String> httpHeads = new HashMap<>();
 
@@ -71,6 +73,7 @@ public class Toutiao365ygPageTest {
 
 	@After
 	public void tearDown() throws Exception {
+		System.out.println(JSON.toJSON(videoInfo));
 	}
 
 	@Test
@@ -94,11 +97,22 @@ public class Toutiao365ygPageTest {
 		Matcher matcher = expression.matcher(html);
 
 		String str = null;
+		String titleStr = null;
+		String strTmp;
+
+		String findStr1 = "videoid:";
+		String findStr2 = "title:";
 		while (matcher.find()) {
-			if (matcher.group().indexOf("videoid:") > 0) {
-				str = matcher.group();
+			strTmp = matcher.group();
+			if (null == str && strTmp.indexOf(findStr1) > 0) {
+				str = strTmp;
 				log.debug(str);
-				break;
+				continue;
+			}
+			if (null == titleStr && strTmp.indexOf(findStr2) > 0) {
+				titleStr = strTmp;
+				log.debug(titleStr);
+				continue;
 			}
 		}
 
@@ -106,23 +120,52 @@ public class Toutiao365ygPageTest {
 			throw new Exception("365yg.com改规则了!!!");
 		}
 
-		String findStr = "videoid:";
-		int beginIndex = str.indexOf(findStr);
+		int beginIndex = str.indexOf(findStr1);
 		int endIndex = StringUtils.indexOf(str, ",", beginIndex);
-		String videoId = str.substring(beginIndex + findStr.length(), endIndex);
+		String videoId = str.substring(beginIndex + findStr1.length(), endIndex);
 
-		char c = videoId.charAt(0);
-		if (c == '\'' || c == '"') {
-			videoId = videoId.substring(1);
-		}
-		c = videoId.charAt(videoId.length() - 1);
-		if (c == '\'' || c == '"') {
-			videoId = videoId.substring(0, videoId.length() - 1);
-		}
+		videoId = parseQuote(videoId);
 
 		log.info(videoId);
 
+		// 获取视频标题
+		beginIndex = str.indexOf(findStr2);
+		endIndex = StringUtils.indexOf(str, ",", beginIndex);
+		String title = str.substring(beginIndex + findStr2.length(), endIndex);
+		title = parseQuote(title);
+		title = title.replace("&#39;", "'");
+		title = title.replace("&quot;", "\"");
+		videoInfo.title = title;
+
+		log.info(title);
+
 		return videoId;
+	}
+
+	protected String parseQuote(String str) {
+		char[] quotes = new char[] { '\'', '"' };
+		int start = -1, end = -1;
+		for (char q : quotes) {
+			start = StringUtils.indexOf(str, q);
+			if (start < 5) {
+				break;
+			}
+		}
+		if (start > -1) {
+			start++;
+		}
+		for (char q : quotes) {
+			end = StringUtils.indexOf(str, q, start);
+			if (end > 5) {
+				break;
+			}
+		}
+		if (end == -1) {
+			return str.substring(start);
+		}
+
+		// 不包含自己
+		return str.substring(start, end);
 	}
 
 	public String getVideoUrl(String videoid) throws Exception {
@@ -142,6 +185,9 @@ public class Toutiao365ygPageTest {
 			throw new HttpClientException(String.format("365yg.com 的视频status=(%d)%s", jsonData.getInteger("status"),
 					videoStates.get(jsonData.getInteger("status"))));
 		}
+
+		// 视频时长
+		videoInfo.duration = (long) (jsonData.getDouble("video_duration") * 1000);
 
 		// 查找最高清的视频
 		JSONObject video_list = jsonData.getJSONObject("video_list");
@@ -168,7 +214,9 @@ public class Toutiao365ygPageTest {
 			throw new Exception("365yg.com 获取视频video_list的方式变了!!!");
 		}
 
-		return new String(Base64.decodeBase64(highVideo.getString("main_url")));
+		String main_url = new String(Base64.decodeBase64(highVideo.getString("main_url")));
+		videoInfo.videoUrlList.add(main_url);
+		return main_url;
 	}
 
 	final String remoteURL = "//ib.365yg.com/video/urls/v/1/toutiao/mp4/";
@@ -193,6 +241,7 @@ public class Toutiao365ygPageTest {
 	public void testDecodeBase64() {
 		String code = "aHR0cDovL3Y3LnBzdGF0cC5jb20vNGJjNmFmOTljM2U4MjQ5NjRkZTIxMjU2YjAxMDQ2YmIvNThjNjRlNDkvdmlkZW8vbS8yMjBkMmJlYzkxMWNkMTI0MTc1OWEwNjBlZGQ3ZmEwNDBkYTExNDQwYTEwMDAwMjU5YTA5MWFiYjRmLw==";
 		code = "aHR0cDovL3Y2LjM2NXlnLmNvbS92aWRlby9tLzIyMGQyYmVjOTExY2QxMjQxNzU5YTA2MGVkZDdmYTA0MGRhMTE0NDBhMTAwMDAyNTlhMDkxYWJiNGYvP0V4cGlyZXM9MTQ4OTM5NDc3NyZBV1NBY2Nlc3NLZXlJZD1xaDBoOVRkY0VNcm0xVmxSMmFkJTJGJlNpZ25hdHVyZT0zJTJGQUUydzRDUE9ST3VOdldMJTJGWGhJMmxuUkQwJTNE";
+		code = "aHR0cDovL3Y3LnBzdGF0cC5jb20vYWQzN2EzZjhiYWU0YmM4MWM5OTY2M2Y3NGU5YmQ4NjcvNThlODVjOWYvdmlkZW8vbS8yMjBhNjllNzMyMjkzOWE0Mjg0YTI2NmI2ZGE5ZTIxNjdlZTExNDQwOWYwMDAwMmJmNTZjOWY0N2ViLw==";
 		byte[] bytes = Base64.decodeBase64(code);
 		log.info(new String(bytes));
 	}
