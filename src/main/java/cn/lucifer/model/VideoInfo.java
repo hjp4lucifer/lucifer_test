@@ -1,11 +1,13 @@
 package cn.lucifer.model;
 
+import java.util.LinkedList;
+
 public class VideoInfo {
 
 	/**
 	 * 视频地址
 	 */
-	public String videoUrl;
+	public LinkedList<String> videoUrlList = new LinkedList<>();
 
 	/**
 	 * 标题
