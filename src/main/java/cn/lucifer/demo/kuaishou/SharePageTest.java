@@ -11,21 +11,29 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.alibaba.fastjson.JSON;
+
 import cn.lucifer.http.HttpHelper;
 import cn.lucifer.http.HttpMethod;
+import cn.lucifer.model.VideoInfo;
 
 /**
- * 快手
+ * 快手, 无视频时长
  * 
  * @author Lucifer
  *
  */
 public class SharePageTest {
 	public static Logger log = Logger.getLogger("lucifer_test");
+	protected VideoInfo videoInfo = new VideoInfo();
 
 	final HashMap<String, String> httpHeads = new HashMap<>();
 
@@ -40,11 +48,12 @@ public class SharePageTest {
 
 	@After
 	public void tearDown() throws Exception {
+		System.out.println(JSON.toJSON(videoInfo));
 	}
 
 	@Test
 	public void test() throws Exception {
-		String url = "http://www.kuaishou.com/photo/364878822/1740807930";
+		String url = "https://www.kuaishou.com/photo/364878822/1740807930";
 
 		byte[] data = HttpHelper.http(url, HttpMethod.GET, httpHeads, null);
 		String html = new String(data);
@@ -52,6 +61,18 @@ public class SharePageTest {
 
 		String videoUrl = getVideoURL(html);
 		log.info(videoUrl);
+
+		videoInfo.videoUrlList.add(videoUrl);
+
+		Document doc = Jsoup.parse(html);
+
+		Elements metas = doc.select("title");
+		for (Element m : metas) {
+			videoInfo.text = m.text();
+			break;
+		}
+		
+		//缺时长
 	}
 
 	@Test
