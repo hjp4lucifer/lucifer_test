@@ -13,16 +13,30 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.alibaba.fastjson.JSON;
+
 import cn.lucifer.http.HttpClientException;
 import cn.lucifer.http.HttpHelper;
 import cn.lucifer.http.HttpMethod;
+import cn.lucifer.model.VideoInfo;
 
+/**
+ * 秒拍, 无视频时长
+ * 
+ * @author Lucifer
+ *
+ */
 public class VideoPageTest {
 	final HashMap<String, String> httpHeads = new HashMap<>();
+	protected VideoInfo videoInfo = new VideoInfo();
 
 	@Before
 	public void setUp() throws Exception {
@@ -35,6 +49,7 @@ public class VideoPageTest {
 
 	@After
 	public void tearDown() throws Exception {
+		System.out.println(JSON.toJSON(videoInfo));
 	}
 
 	public static Logger log = Logger.getLogger("lucifer_test");
@@ -57,6 +72,10 @@ public class VideoPageTest {
 		URL url$ = new URL(video_url);
 		String fn = StringUtils.replaceChars(url$.getPath(), '/', '_');
 		File f = new File(folder, fn);
+		if (f.exists()) {
+			log.info("this video is download, path=" + f.getAbsolutePath());
+			return;
+		}
 
 		FileOutputStream outputStream = new FileOutputStream(f);
 		for (int i = 0; i < 10; i++) {
@@ -108,6 +127,22 @@ public class VideoPageTest {
 			url = url.substring(url.indexOf("http"));
 		}
 		log.info(url);
+		videoInfo.videoUrlList.add(url);
+
+		// 查找封面
+		Document doc = Jsoup.parse(html);
+		Elements lis = doc.select("li.playing");
+		Element li = lis.get(0);
+		String style = li.attr("style");
+		findStr = "url('";
+		beginIndex = style.indexOf(findStr);
+		endIndex = StringUtils.indexOf(style, "')", beginIndex);
+		videoInfo.cover = style.substring(beginIndex + findStr.length(), endIndex);
+
+		// 查找标题
+		Elements ps = doc.select(".viedoAbout p");
+		Element p = ps.get(0);
+		videoInfo.title = p.text();
 
 		return url;
 	}
