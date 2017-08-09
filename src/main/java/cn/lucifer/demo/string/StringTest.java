@@ -43,6 +43,12 @@ public class StringTest {
 	public void printString(String string) {
 		System.out.println(string + System.currentTimeMillis());
 	}
+	
+	@Test
+	public void test(){
+		byte[] rsp = null;
+		System.out.println(rsp == null ? null : new String(rsp));
+	}
 
 	@Test
 	public void testSql() {
