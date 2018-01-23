@@ -25,6 +25,8 @@ public class Smali2JavaTest {
 
 	private final Stack<Parser> keyStack = new Stack<>();
 	private final String smaliPath = "resource/smali/a.smali";
+	// private final String smaliPath =
+	// "resource/smali/AppSettingActivity.smali";
 	private final LinkedList<Parser> linked = new LinkedList<>();
 
 	@Before
@@ -68,6 +70,9 @@ public class Smali2JavaTest {
 	 */
 	private void parseLine(String line) {
 		if (StringUtils.isBlank(line)) {
+			return;
+		}
+		if (line.startsWith("#")) {
 			return;
 		}
 
