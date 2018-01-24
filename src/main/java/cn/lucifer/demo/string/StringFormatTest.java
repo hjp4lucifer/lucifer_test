@@ -45,6 +45,8 @@ public class StringFormatTest {
 		System.out.println(result);
 		result = String.format("%05X", 3);
 		System.out.println(result);
+		
+		System.out.println(String.format("%d, %s", 3));
 	}
 
 	@Test

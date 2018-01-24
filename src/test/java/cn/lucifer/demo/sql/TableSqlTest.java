@@ -38,5 +38,12 @@ public class TableSqlTest {
 				"resource/sql/createTable.sql"));
 		System.out.println(str);
 	}
-
+	
+	@Test
+	public void testTableSqlToMapper() throws IOException {
+		TableSqlToMapper sqlToMapper = new TableSqlToMapper();
+		String str = sqlToMapper.generate(new File(
+				"resource/sql/createTable.sql"));
+		System.out.println(str);
+	}
 }
