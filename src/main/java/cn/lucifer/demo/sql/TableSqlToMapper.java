@@ -82,7 +82,7 @@ public class TableSqlToMapper extends TableSqlBase {
 			} else {
 				builder.append("<result ");
 			}
-			builder.append("column=\"").append(info.columnName).append("\" jdbcType=\"").append(info.columnType)
+			builder.append("column=\"").append(info.columnName).append("\" jdbcType=\"").append(getColumnType(info))
 					.append("\" property=\"").append(info.name).append("\"/>");
 		}
 		tCount--;
@@ -90,6 +90,19 @@ public class TableSqlToMapper extends TableSqlBase {
 		newline(builder, tCount);
 		builder.append("</resultMap>");
 		lineList.add(builder.toString());
+	}
+
+	/**
+	 * 处理ibatis对数据库命名不符合的问题
+	 * 
+	 * @param info
+	 * @return
+	 */
+	private String getColumnType(FieldInfo info) {
+		if ("INT".equalsIgnoreCase(info.columnType)) {
+			return "INTEGER";
+		}
+		return info.columnType;
 	}
 
 	protected void generateAdd() {
