@@ -14,6 +14,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 
+import com.alibaba.fastjson.JSON;
+
 /**
  * @author Lucifer
  * 
@@ -42,7 +44,7 @@ public class RegexTest {
 			System.out.println(matcher.group());
 		}
 	}
-	
+
 	@Test
 	public void test3() {
 		String regex = "\\w+([-+.']\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*";
@@ -61,8 +63,7 @@ public class RegexTest {
 		String regex = ";|(--)|'|\"";
 		String[] sources = new String[] {
 				"select sum(view_count),sum(income) from ad_user_report a, ad_product b  where a.coo_id='e018dc4da82d497ca6cd46ee083f78d1' AND a.coo_id = b.coo_id AND b.status_screen=3  and timeframe>='2014-05-01' or 1='1 00' and timeframe<='2014-05-08 14'",
-				"aaa,dd", "aaaaaa;aa", "bbbbbb-bbbb", "cccccccc--ccc",
-				"ddddd'dddd", "eeee\"eeeeee" };
+				"aaa,dd", "aaaaaa;aa", "bbbbbb-bbbb", "cccccccc--ccc", "ddddd'dddd", "eeee\"eeeeee" };
 
 		Pattern expression = Pattern.compile(regex);
 		Matcher matcher;
@@ -113,13 +114,13 @@ public class RegexTest {
 		System.out.println(txt);
 		System.out.println("\n\n\n\n");
 		String regex = "<font .*?>(.*?)</font>";
-		List<String> chilren = getMatchChildren( txt,regex);
+		List<String> chilren = getMatchChildren(txt, regex);
 		for (String str : chilren) {
 			str = StringUtils.remove(str, '-');
 			System.out.println(str);
 		}
 	}
-	
+
 	public List<String> getMatchChildren(String source, String regex) {
 		Pattern expression = Pattern.compile(regex);
 		Matcher matcher = expression.matcher(source);
@@ -138,15 +139,24 @@ public class RegexTest {
 	public void testUserAgentFind() {
 		String userAgent = "Mozilla/5.0 (iPhoe; U; CPU iPone OS 3_0 like Mac OS X; en-us) AppleWebKit/528.18 (KHTML, like Gecko) Version/4.0 Mobile/7A341 Safari/528.16";
 
-		final String regex = "iphone|ipod|ipad|android"; 
+		final String regex = "iphone|ipod|ipad|android";
 		userAgent = userAgent.toLowerCase();
 		System.out.println(Pattern.compile(regex).matcher(userAgent).find());
 		System.out.println(userAgent.replaceAll(regex, ""));
 	}
-	
+
 	@Test
-	public void testMatch(){
+	public void testMatch() {
 		final String callback = "d";
 		System.out.println(Pattern.matches("\\w+", callback));
+	}
+
+	@Test
+	public void testSmaliField() {
+		String regex = "([\\w|$]+):L([\\w|/]+);";
+		final String source = "a:Ljava/nio/charset/CharsetDecoder;";
+		System.out.println(Pattern.matches(regex, source));
+		List<String> list = getMatchChildren(source, regex);
+		System.out.println(JSON.toJSONString(list));
 	}
 }

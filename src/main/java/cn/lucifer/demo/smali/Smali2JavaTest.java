@@ -99,8 +99,27 @@ public class Smali2JavaTest {
 			}
 			linked.add(parser);
 			r = parser.parseLine(words);
+		} else if (ParseResultEnum.TO_CHILD_PARSE == r) {
+			processChildParser(parser, words);
 		}
 
 	}
 
+	protected void processChildParser(Parser parent, String[] words) {
+		Parser child = parent.getLastChildrenParser();
+		ParseResultEnum r;
+		if (null == child || child.isFinished) {
+			child = ParserFactory.generateChildrenParser(parent, words);
+			if (null == child) {
+				return;
+			}
+			r = child.parseLine(words);
+			parent.addLastChildrenParser(child);
+		} else {
+			r = child.parseLine(words);
+			if (ParseResultEnum.NO_MATCH == r) {
+				processChildParser(parent, words);
+			}
+		}
+	}
 }

@@ -8,5 +8,13 @@ public enum ParseResultEnum {
 	/**
 	 * 继续
 	 */
-	GO_ON;
+	GO_ON,
+	/**
+	 * 到子解释器
+	 */
+	TO_CHILD_PARSE,
+	/**
+	 * 子解释器使命完成
+	 */
+	CHILD_PARSE_FINISHED;
 }

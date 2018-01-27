@@ -15,15 +15,23 @@ import org.apache.commons.lang.text.StrBuilder;
 public class ClassParser extends Parser {
 
 	public final static HashSet<String> prefix_keywords = new HashSet<>();
+	public final static HashSet<String> class_prefix_keywords = new HashSet<>();
+	public final static HashSet<String> sub_prefix_keywords = new HashSet<>();
 	private final static String key_class = ".class";
 	private final static String key_super = ".super";
 	private final static String key_implements = ".implements";
 	private LinkedList<String> key_list = new LinkedList<>();
 
 	static {
-		prefix_keywords.add(key_class);
-		prefix_keywords.add(key_super);
-		prefix_keywords.add(key_implements);
+		class_prefix_keywords.add(key_class);
+		class_prefix_keywords.add(key_super);
+		class_prefix_keywords.add(key_implements);
+
+		sub_prefix_keywords.addAll(FieldParser.prefix_keywords);
+		sub_prefix_keywords.addAll(MethodParser.prefix_keywords);
+
+		prefix_keywords.addAll(class_prefix_keywords);
+		prefix_keywords.addAll(sub_prefix_keywords);
 	}
 
 	@Override
@@ -31,6 +39,14 @@ public class ClassParser extends Parser {
 		if (!prefix_keywords.contains(words[0])) {
 			finished();
 			return ParseResultEnum.NO_MATCH;
+		}
+		if (sub_prefix_keywords.contains(words[0])) {
+			if (!inChildrenMode) {
+				finished();
+			}
+			isFinished = false;
+			inChildrenMode = true;
+			return ParseResultEnum.TO_CHILD_PARSE;
 		}
 
 		if (key_class.equals(words[0])) {
@@ -89,9 +105,12 @@ public class ClassParser extends Parser {
 
 	@Override
 	public void finished() {
+		if (!inChildrenMode) {
+			outLine.add("{");
+			outLineStack.add("}");
+		}
 		isFinished = true;
-		outLine.add("{");
-		outLineStack.add("}");
+		inChildrenMode = false;
 	}
 
 }

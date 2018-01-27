@@ -14,13 +14,17 @@ public abstract class Parser {
 	 */
 	public boolean isFinished;
 	/**
+	 * 在children解释模式中
+	 */
+	public boolean inChildrenMode;
+	/**
 	 * smali文件所包含的line
 	 */
 	protected LinkedList<String[]> smaliLinked = new LinkedList<>();
 	/**
 	 * 子解释器, 当有包含关系时, 则会存放在这里
 	 */
-	protected LinkedList<Parser> subParser = new LinkedList<>();
+	protected LinkedList<Parser> childrenParser = new LinkedList<>();
 	/**
 	 * 最终输出的字符串
 	 */
@@ -44,12 +48,22 @@ public abstract class Parser {
 
 	protected String processClassFullName(String word) {
 		if (isClassFullName(word)) {
-			word = StringUtils.replaceChars(word, '/', '.');
+			word = changePath2Package(word);
 			word = word.substring(1, word.length() - 1);
 
 			return word;
 		}
 		return null;
+	}
+
+	/**
+	 * 把路径的string转换成package的表达方式
+	 * 
+	 * @param word
+	 * @return
+	 */
+	protected String changePath2Package(String word) {
+		return StringUtils.replaceChars(word, '/', '.');
 	}
 
 	/**
@@ -59,7 +73,7 @@ public abstract class Parser {
 	 */
 	public LinkedList<String> toLines() {
 		LinkedList<String> linkedList = new LinkedList<>(outLine);
-		for (Parser sub : subParser) {
+		for (Parser sub : childrenParser) {
 			linkedList.addAll(sub.toLines());
 		}
 		while (!outLineStack.empty()) {
@@ -72,6 +86,17 @@ public abstract class Parser {
 	 * 该解释器处理完成后的动作
 	 */
 	public void finished() {
+		isFinished = true;
+	}
 
+	public Parser getLastChildrenParser() {
+		if (childrenParser.isEmpty()) {
+			return null;
+		}
+		return childrenParser.getLast();
+	}
+
+	public void addLastChildrenParser(Parser child) {
+		childrenParser.addLast(child);
 	}
 }
