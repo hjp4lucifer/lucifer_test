@@ -65,6 +65,7 @@ public class ClassParser extends Parser {
 
 					String className = word.substring(point + 1);
 					words[i] = "class " + className;
+					mainName = className;
 				}
 			}
 		} else if (key_super.equals(words[0])) {

@@ -10,6 +10,10 @@ public abstract class Parser {
 	public static Logger log = Logger.getLogger(Parser.class);
 
 	/**
+	 * 主名称, 如：类名, 方法名, 字段名
+	 */
+	public String mainName;
+	/**
 	 * 该解释器已完成使命
 	 */
 	public boolean isFinished;
@@ -21,6 +25,10 @@ public abstract class Parser {
 	 * smali文件所包含的line
 	 */
 	protected LinkedList<String[]> smaliLinked = new LinkedList<>();
+	/**
+	 * 父解释器
+	 */
+	public Parser parentParser;
 	/**
 	 * 子解释器, 当有包含关系时, 则会存放在这里
 	 */
@@ -43,7 +51,8 @@ public abstract class Parser {
 	public abstract ParseResultEnum parseLine(String[] words);
 
 	protected boolean isClassFullName(String word) {
-		return word.startsWith("L") && word.endsWith(";");
+		return word.startsWith(KeywordDictionaryUtils.class_flag)
+				&& word.endsWith(KeywordDictionaryUtils.class_end_flag);
 	}
 
 	protected String processClassFullName(String word) {

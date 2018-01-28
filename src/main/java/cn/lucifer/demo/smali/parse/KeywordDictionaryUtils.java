@@ -13,6 +13,15 @@ import java.util.Map.Entry;
 public class KeywordDictionaryUtils {
 
 	/**
+	 * class的开始标识
+	 */
+	public final static String class_flag = "L";
+	/**
+	 * class的结束标识
+	 */
+	public final static String class_end_flag = ";";
+
+	/**
 	 * key=基本数据类型flag, vlaue=基本数据类型
 	 */
 	public final static HashMap<String, String> flag_2_base_type = new HashMap<>();

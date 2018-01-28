@@ -154,9 +154,19 @@ public class RegexTest {
 	@Test
 	public void testSmaliField() {
 		String regex = "([\\w|$]+):L([\\w|/]+);";
-		final String source = "a:Ljava/nio/charset/CharsetDecoder;";
+		String source = "a:Ljava/nio/charset/CharsetDecoder;";
 		System.out.println(Pattern.matches(regex, source));
 		List<String> list = getMatchChildren(source, regex);
+		System.out.println(JSON.toJSONString(list));
+
+		regex = "<init>\\((.*?)\\)(\\w)";
+		source = "<init>(Landroid/preference/Preference;Ljava/lang/Object;)Z";
+		list = getMatchChildren(source, regex);
+		System.out.println(JSON.toJSONString(list));
+		System.out.println(JSON.toJSONString(list.get(0).split(";")));
+
+		source = "<init>()V";
+		list = getMatchChildren(source, regex);
 		System.out.println(JSON.toJSONString(list));
 	}
 }

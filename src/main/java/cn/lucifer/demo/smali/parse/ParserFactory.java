@@ -35,11 +35,15 @@ public class ParserFactory {
 	 * @return
 	 */
 	public static Parser generateChildrenParser(Parser parent, String[] words) {
+		Parser child = null;
 		if (parent instanceof ClassParser) {
 			if (FieldParser.prefix_keywords.contains(words[0])) {
-				return new FieldParser();
+				child = new FieldParser();
+			} else if (MethodParser.prefix_keywords.contains(words[0])) {
+				child = new MethodParser();
 			}
+			child.parentParser = parent;
 		}
-		return null;
+		return child;
 	}
 }

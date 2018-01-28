@@ -25,12 +25,14 @@ public class FieldParser extends Parser {
 		}
 		if (key_field.equals(words[0])) {
 			words[0] = null;
+			// 转义前: ([\w|$]+):L([\w|/]+);
 			final String regex = "([\\w|$]+):L([\\w|/]+);";
 			for (int i = 1, len = words.length; i < len; i++) {
 				String word = words[i];
 				if (Pattern.matches(regex, word)) {
 					List<String> subWord = RegexUtils.getMatchChildren(word, regex);
 					words[i] = changePath2Package(subWord.get(1)) + " " + subWord.get(0) + ";";
+					mainName = subWord.get(0);
 				}
 			}
 		}
