@@ -22,6 +22,7 @@ public class TableSqlToDao extends TableSqlBase {
 		builder.append("import java.sql.ResultSet;\n");
 		builder.append("import java.sql.SQLException;\n");
 		builder.append("import java.util.Date;\n");
+		builder.append("import java.math.BigDecimal;\n");
 
 		// BLOB
 		if (checkFieldType("BLOB")) {

@@ -19,6 +19,7 @@ public class TableSqlToModel extends TableSqlBase {
 		StrBuilder builder = new StrBuilder();
 
 		builder.append("import java.util.Date;\n");
+		builder.append("import java.math.BigDecimal;\n");
 
 		builder.append("\n\n");
 		

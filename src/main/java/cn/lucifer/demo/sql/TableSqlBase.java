@@ -36,6 +36,7 @@ public class TableSqlBase {
 		typeMap.put("TEXT", "String");
 		typeMap.put("DATE", "Date");
 		typeMap.put("BLOB", "byte[]");
+		typeMap.put("DECIMAL", "BigDecimal");
 	}
 
 	protected String tabelName;
@@ -176,7 +177,7 @@ public class TableSqlBase {
 							}
 						}
 						if (notFind) {
-							throw new RuntimeException("No map type=" + fieldTypeName);
+							throw new RuntimeException("No map type=" + columnType);
 						}
 						fieldIndex++;
 					}
