@@ -37,6 +37,13 @@ public class BaiJiaJiangTan {
         configList = JSON.parseArray(videoConfig, VideoConfig.class);
     }
 
+    /**
+     * 解析视频列表->详情页的url
+     *
+     * @param config
+     * @return
+     * @throws Exception
+     */
     public Set<String> getVideoDetailUrlSet(VideoConfig config) throws Exception {
         Document homeDoc = Jsoup.parse(new URL(config.home), 5000);
         Elements videoDetailUrlList = homeDoc.select("div.tp1 a");
@@ -48,14 +55,24 @@ public class BaiJiaJiangTan {
         return videoDetailUrlSet;
     }
 
+    /**
+     * 解析视频详情页, 并下载视频
+     *
+     * @param pageUrl 视频详情页url
+     * @param config
+     * @throws Exception
+     */
     public void downloadVideo(String pageUrl, VideoConfig config) throws Exception {
 
         String pageSource = new String(HttpHelper.httpGet(pageUrl, connectTimeout));
 
-        String videoCode = StringUtils.substringBetween(pageSource, "<!--repaste.video.code.begin-->", "<!--repaste.video.code.end-->");
+        String videoCode = getVideoCode(pageSource, config);
         String title = StringUtils.substringBetween(pageSource, "<!--repaste.title.begin-->", "<!--repaste.title.end-->");
         title = StringUtils.removeStart(title, "《百家讲坛》").trim();
 
+        if (StringUtils.isBlank(videoCode)) {
+            throw new Exception("videoCode解析失败, pageUrl = " + pageUrl);
+        }
         System.out.println("准备下载：《" + title + "》, videoCode=" + videoCode);
 
         File folder = new File(DOWNLOAD_2_BASE_FOLDER, title);
@@ -94,9 +111,28 @@ public class BaiJiaJiangTan {
         }
     }
 
+    /**
+     * 获取videoCode
+     *
+     * @param pageSource
+     * @param config
+     * @return
+     */
+    private String getVideoCode(String pageSource, VideoConfig config) {
+        switch (config.parseVideoCodeMode) {
+            case 1:
+                return StringUtils.substringBetween(pageSource, "<!--repaste.video.code.begin-->", "<!--repaste.video.code.end-->");
+            case 2:
+                return StringUtils.substringBetween(pageSource, "var guid = \"", "\";");
+            default:
+                return null;
+        }
+    }
+
     public static class VideoConfig {
         public String title;
         public String home;
         public String videoUrlFormat;
+        public int parseVideoCodeMode;
     }
 }
