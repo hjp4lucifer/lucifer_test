@@ -27,5 +27,11 @@
     "home": "http://tv.cctv.com/2018/04/02/VIDAwZMx6YsxaAMD21swRRkk180402.shtml",
     "videoUrlFormat": "https://newcntv.qcloudcdn.com/asp/hls/2000/0303000a/3/default/%s/%d.ts",
     "parseVideoCodeMode": 2
+  },
+  {
+    "title": "国史通鉴·宋辽金元篇（上部）",
+    "home": "http://tv.cctv.com/2020/02/18/VIDAgqf2UecvWsMRatZyVZY0200218.shtml",
+    "videoUrlFormat": "https://newcntv.qcloudcdn.com/asp/hls/2000/0303000a/3/default/%s/%d.ts",
+    "parseVideoCodeMode": 2
   }
 ]
