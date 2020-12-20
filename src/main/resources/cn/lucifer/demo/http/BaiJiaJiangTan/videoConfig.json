@@ -1,0 +1,22 @@
+[
+  {
+    "title": "国史通鉴 第一部",
+    "home": "http://tv.cctv.com/2014/01/09/VIDA1389240609472246.shtml",
+    "videoUrlFormat": "http://hls.cntv.kcdnvip.com/asp/hls/850/0303000a/3/default/%s/%d.ts"
+  },
+  {
+    "title": "春秋战国篇",
+    "home": "http://tv.cctv.com/2014/09/23/VIDA1411459749240601.shtml",
+    "videoUrlFormat": "http://hls.cntv.myalicdn.com/asp/hls/850/0303000a/3/default/%s/%d.ts"
+  },
+  {
+    "title": "秦汉三国篇",
+    "home": "http://tv.cctv.com/2015/08/04/VIDA1438655975089688.shtml",
+    "videoUrlFormat": "http://hls.cntv.baishancdnx.cn/asp/hls/2000/0303000a/3/default/%s/%d.ts"
+  },
+  {
+    "title": "《百家讲坛》国史通鉴第四部《两晋南北朝》",
+    "home": "http://tv.cctv.com/2017/01/09/VIDAWW1igXaYorslTe4y6OpF170109.shtml",
+    "videoUrlFormat": "http://hls.cntv.baishancdnx.cn/asp/hls/2000/0303000a/3/default/%s/%d.ts"
+  }
+]
