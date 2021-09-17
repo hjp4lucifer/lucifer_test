@@ -12,7 +12,7 @@ public class VideoMergeTest {
 
     private final static String suffix = ".ts";
 
-    private String folderName = "E:\\百家讲坛·国史通鉴\\04 两晋南北朝篇\\20170109 国史通鉴•两晋南北朝篇（19）南朝旧事";
+    private String folderName = "E:\\百家讲坛·国史通鉴\\06 宋辽金元篇（上部）\\20191205 国史通鉴·宋辽金元篇（上部）1 黄袍加身";
 
     private VideoMerge videoMerge = new VideoMerge(0, 30);
 

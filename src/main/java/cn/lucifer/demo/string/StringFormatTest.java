@@ -25,6 +25,9 @@ public class StringFormatTest {
 		System.out.println(String.format("aa %s , %b", name, is));
 		
 		System.out.println(String.format("%02X ",10));
+
+		System.out.println(String.format("%02d ",1));
+
 	}
 
 	@Test
