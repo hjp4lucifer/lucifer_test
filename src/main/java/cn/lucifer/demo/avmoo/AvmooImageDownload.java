@@ -23,24 +23,34 @@ public class AvmooImageDownload {
 	}
 
 	public void downloadAndSave() throws Exception {
-		HttpSocket httpSocket = new HttpSocket(star.getUrl().getHost(), 443, 300000);
-		List<String> allMoviePageUrl = star.getAllMoviePageUrl(null);
+//		HttpSocket httpSocket = new HttpSocket(star.getUrl().getHost(), 443, 300000);
+		HttpSocket httpSocket = null;
+		List<String> allMoviePageUrl = star.getAllMoviePageUrl(httpSocket);
+
 		// System.out.println(JSON.toJSONString(allMoviePageUrl));
 
 		List<AvmooMovie> avmooMovieList = Lists.newArrayListWithExpectedSize(allMoviePageUrl.size());
 
 		for (String moviePageUrl : allMoviePageUrl) {
-			System.out.println("movie=" + moviePageUrl);
-			AvmooMovie avmooMovie = new AvmooMovie(moviePageUrl);
-			avmooMovie.parseUrl(httpSocket);
-			avmooMovieList.add(avmooMovie);
+			try {
+				System.out.println("movie=" + moviePageUrl);
+				AvmooMovie avmooMovie = new AvmooMovie(moviePageUrl);
+				avmooMovie.parseUrl(httpSocket);
+				avmooMovieList.add(avmooMovie);
+			} catch (org.jsoup.HttpStatusException e) {
+				if (e.getStatusCode() == 403) {
+					System.err.println(e.toString());
+				} else {
+					throw e;
+				}
+			}
 		}
 
 		for (AvmooMovie avmooMovie : avmooMovieList) {
 			saveMovie(savePath, avmooMovie);
 		}
 
-		httpSocket.close();
+//		httpSocket.close();
 	}
 
 	private void saveMovie(File savePath, AvmooMovie avmooMovie) throws Exception {

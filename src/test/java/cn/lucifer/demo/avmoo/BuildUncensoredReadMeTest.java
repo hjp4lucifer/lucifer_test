@@ -1,5 +1,6 @@
 package cn.lucifer.demo.avmoo;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -55,8 +56,33 @@ public class BuildUncensoredReadMeTest {
 		}
 
 		// 排序
-		resultList.sort(String::compareTo);
+		resultList.sort(Comparator.comparing(String::toLowerCase));
 		FileUtils.writeLines(targetFile, "utf-8", resultList, "\n");
+
+		findLiked(resultList);
+	}
+
+	private void findLiked(List<String> resultList) {
+		List<String> likedNameList = Lists.newArrayList();
+		String perName = null;
+		for (String name : resultList) {
+			int pos = name.indexOf("\t");
+			if (pos > 0) {
+				name = name.substring(0, pos);
+			}
+			if (null == perName) {
+				perName = name;
+				continue;
+			}
+
+			if (perName.toLowerCase().equals(name.toLowerCase())) {
+				likedNameList.add(name);
+			}
+
+			perName = name;
+		}
+
+		System.out.println("likedNameList = " + JSON.toJSONString(likedNameList));
 	}
 
 	private void findVideo2ResultList(File folder, File keyFolder, List<String> resultList) {

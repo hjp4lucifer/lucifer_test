@@ -51,14 +51,24 @@ public class AvmooStar {
 
 		int index = 0;
 		for (String nextUrl = findNextPage(doc); nextUrl != null; nextUrl = findNextPage(doc)) {
+			if (index++ >= 30) {
+				break;
+			}
+
 			String next = url.getProtocol() + "://" + url.getHost() + nextUrl;
 			System.out.println("next=" + next);
 			url = new URL(next);
-			doc = getDoc(httpSocket, url);
-			result.addAll(findMovieBox(doc));
-			if(index ++ >= 30){
-				break;
+			try {
+				doc = getDoc(httpSocket, url);
+			} catch (org.jsoup.HttpStatusException e) {
+				if (e.getStatusCode() == 403) {
+					System.err.println(e.toString());
+					break;
+				} else {
+					throw e;
+				}
 			}
+			result.addAll(findMovieBox(doc));
 		}
 
 		return result;
