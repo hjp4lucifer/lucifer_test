@@ -160,7 +160,7 @@ public class SinaBlogDemo {
 	}
 
 	@Test
-	public void testDefaultOrignal() {
+	public void testDefaultOrignal() throws IOException {
 		byte[] data = HttpClientHelper.httpGet(
 				"http://s8.sinaimg.cn/image/default_orignal.gif#4", null);
 		System.out.println(data.length);

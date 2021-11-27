@@ -30,7 +30,9 @@ public class BtsowSearchTest {
 
 	@Test
 	public void testFolder() throws Exception {
-		File folder = new File("D:\\limit3\\篠田ゆう");
+//		File folder = new File("E:\\limit\\篠田ゆう");
+//		File folder = new File("E:\\limit\\桃乃木かな");
+		File folder = new File("E:\\limit\\三上悠亜");
 		File[] subFileList = folder.listFiles();
 
 		List<String> movieNameList = new LinkedList<>();

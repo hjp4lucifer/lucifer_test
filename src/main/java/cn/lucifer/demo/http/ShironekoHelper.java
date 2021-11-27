@@ -1,5 +1,6 @@
 package cn.lucifer.demo.http;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
@@ -22,7 +23,7 @@ import cn.lucifer.util.HttpClientHelper;
 public class ShironekoHelper {
 
 	@Test
-	public void testGetHelpCode() throws MalformedURLException {
+	public void testGetHelpCode() throws IOException {
 		String uri = "http://shironekoproject.gamerch.com/%E8%A1%80%E5%88%80%E3%83%8E%E9%81%93%E9%80%A3%E3%83%AC%20%E5%8D%94%E5%8A%9B%E5%8B%9F%E9%9B%86%E6%8E%B2%E7%A4%BA%E6%9D%BF";
 		byte[] rep = HttpClientHelper.httpGet(uri, null);
 		String html = new String(rep);
@@ -35,7 +36,7 @@ public class ShironekoHelper {
 	}
 
 	@Test
-	public void testRuningGetHelper() throws MalformedURLException {
+	public void testRuningGetHelper() throws IOException {
 		String uri = "http://shironekoproject.gamerch.com/%E6%B5%81%E8%BB%A2%E3%83%8E%E6%83%A8%E5%AE%B3%20%20%E5%8D%94%E5%8A%9B%E5%8B%9F%E9%9B%86%E6%8E%B2%E7%A4%BA%E6%9D%BF";
 		HashSet<String> hash = new HashSet<>(50);
 		while (true) {

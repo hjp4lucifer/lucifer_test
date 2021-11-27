@@ -64,14 +64,14 @@ public class SimpleCommonPicDemo {
 	private final String imgCssQuery = ".content-pic img";
 
 	@Test
-	public void test() {
+	public void test() throws IOException {
 		String nextUrl;
 		do {
 			nextUrl = parseListView(index_url);
 		} while (null != nextUrl);
 	}
 
-	protected String parseListView(String url) {
+	protected String parseListView(String url) throws IOException {
 		Document doc = parseToDetailView(url);
 		Elements pageArray = doc.select(pageCssQuery);
 		for (Element a : pageArray) {
@@ -86,7 +86,7 @@ public class SimpleCommonPicDemo {
 		return null;
 	}
 
-	protected Document parseToDetailView(String url) {
+	protected Document parseToDetailView(String url) throws IOException {
 		byte[] respone = HttpClientHelper.httpGet(url, null);
 		Document doc = Jsoup.parse(new String(respone));
 		Elements aArray = doc.select(detailViewCssQuery);
@@ -100,7 +100,7 @@ public class SimpleCommonPicDemo {
 		return doc;
 	}
 
-	protected void parsePhotoListView(String url) {
+	protected void parsePhotoListView(String url) throws IOException {
 		byte[] respone = HttpClientHelper.httpGet(url, null);
 		Document doc = Jsoup.parse(new String(respone));
 		Elements imgArray = doc.select(imgCssQuery);

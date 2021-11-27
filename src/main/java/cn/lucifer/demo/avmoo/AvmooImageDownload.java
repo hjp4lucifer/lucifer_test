@@ -23,9 +23,7 @@ public class AvmooImageDownload {
 	}
 
 	public void downloadAndSave() throws Exception {
-//		HttpSocket httpSocket = new HttpSocket(star.getUrl().getHost(), 443, 300000);
-		HttpSocket httpSocket = null;
-		List<String> allMoviePageUrl = star.getAllMoviePageUrl(httpSocket);
+		List<String> allMoviePageUrl = star.getAllMoviePageUrl();
 
 		// System.out.println(JSON.toJSONString(allMoviePageUrl));
 
@@ -35,7 +33,7 @@ public class AvmooImageDownload {
 			try {
 				System.out.println("movie=" + moviePageUrl);
 				AvmooMovie avmooMovie = new AvmooMovie(moviePageUrl);
-				avmooMovie.parseUrl(httpSocket);
+				avmooMovie.parseUrl();
 				avmooMovieList.add(avmooMovie);
 			} catch (org.jsoup.HttpStatusException e) {
 				if (e.getStatusCode() == 403) {

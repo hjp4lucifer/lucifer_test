@@ -27,9 +27,8 @@ public class AvmooMovie {
 		this.urlStr = urlStr;
 	}
 
-	public void parseUrl(HttpSocket httpSocket) throws Exception {
-		URL url = new URL(this.urlStr);
-		Document doc = AvmooStar.getDoc(httpSocket, url);
+	public void parseUrl() throws Exception {
+		Document doc = AvmooStar.getDoc(urlStr);
 
 		setterId(doc);
 		setterInfoList(doc);

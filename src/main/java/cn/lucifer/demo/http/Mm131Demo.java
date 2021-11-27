@@ -64,7 +64,7 @@ public class Mm131Demo {
 	private final String imgCssQuery = ".content-pic img";
 
 	@Test
-	public void test() {
+	public void test() throws IOException {
 		byte[] respone = HttpClientHelper
 				.httpGet("http://www.mm131.com/", null);
 		Document doc = Jsoup.parse(new String(respone));
@@ -79,7 +79,7 @@ public class Mm131Demo {
 		}
 	}
 
-	protected String parseListView(String url) {
+	protected String parseListView(String url) throws IOException {
 		Document doc = parseToDetailView(url);
 		Elements pageArray = doc.select(pageCssQuery);
 		for (Element a : pageArray) {
@@ -94,7 +94,7 @@ public class Mm131Demo {
 		return null;
 	}
 
-	protected Document parseToDetailView(String url) {
+	protected Document parseToDetailView(String url) throws IOException {
 		byte[] respone = HttpClientHelper.httpGet(url, null);
 		Document doc = Jsoup.parse(new String(respone));
 		Elements aArray = doc.select(detailViewCssQuery);
@@ -108,7 +108,7 @@ public class Mm131Demo {
 		return doc;
 	}
 
-	protected void parsePhotoListView(String url) {
+	protected void parsePhotoListView(String url) throws IOException {
 		byte[] respone = HttpClientHelper.httpGet(url, null);
 		Document doc = Jsoup.parse(new String(respone));
 		Elements imgArray = doc.select(imgCssQuery);
