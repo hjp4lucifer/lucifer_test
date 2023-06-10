@@ -19,6 +19,8 @@ import static org.junit.Assert.*;
 
 public class AvmooImageDownloadTest {
 
+	private static final String baseUrl = "https://avmoo.cdf/cn/star/";
+
 	@Before
 	public void setUp() throws Exception {
 	}
@@ -30,10 +32,14 @@ public class AvmooImageDownloadTest {
 	@Test
 	public void download() throws Exception {
 
-//		AvmooStar star = new AvmooStar("桃乃木かな", "https://avmoo.casa/cn/star/6a85f721d4b46ea4", false);
-//		AvmooStar star = new AvmooStar("三上悠亜", "https://avmoo.casa/cn/star/aa1709fc6ffeb4f6", false);
-//		AvmooStar star = new AvmooStar("七ツ森りり", "https://avmoo.casa/cn/star/17f01576bb6b6755", true);
-		AvmooStar star = new AvmooStar("篠田ゆう", "https://avmoo.casa/cn/star/44ea747cc9811733");
+		AvmooStar star = new AvmooStar("桃乃木かな", baseUrl + "6a85f721d4b46ea4", true);
+//		AvmooStar star = new AvmooStar("三上悠亜", baseUrl + "aa1709fc6ffeb4f6", true);
+//		AvmooStar star = new AvmooStar("七ツ森りり", baseUrl + "17f01576bb6b6755", true);
+//		AvmooStar star = new AvmooStar("篠田ゆう", baseUrl + "44ea747cc9811733", true);
+//		AvmooStar star = new AvmooStar("伊藤舞雪", baseUrl + "88d230eff70baf29", true);
+//		AvmooStar star = new AvmooStar("小島みなみ", baseUrl + "85ac395eaf2003e0", true);
+//		AvmooStar star = new AvmooStar("桜空もも", baseUrl + "e6d9d8be49e6ea05", true);
+//		AvmooStar star = new AvmooStar("瀬乃みなみ", baseUrl + "22c81b1a0de11ecf", true);
 
 		final File savePath = new File("E:\\limit\\" + star.getName());
 

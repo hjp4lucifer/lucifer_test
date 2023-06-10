@@ -65,9 +65,9 @@ public class AvmooStar {
 
 		int index = 0;
 		for (String nextUrl = findNextPage(doc); nextUrl != null; nextUrl = findNextPage(doc)) {
-//			if (index++ >= 40) {
-//				break;
-//			}
+			if (index++ >= 4) {
+				break;
+			}
 
 			String next = url.getProtocol() + "://" + url.getHost() + nextUrl;
 			System.out.println("next=" + next);

@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class BtsowSearch {
 
-	private final String base_url = "https://btsow.rest/search/Uncensored%20";
+	private final String base_url = "https://btsow.beauty/search/Uncensored%20";
 	private final Map<String, String> httpHeads;
 
 	public BtsowSearch() {
@@ -35,12 +35,26 @@ public class BtsowSearch {
 		}
 		for (Element a : aList) {
 			String title = a.attr("title");
-			if (title.contains("Uncensored")) {
+			String testTitle = title.toLowerCase();
+			if (testTitle.contains("uncensored")) {
 				System.out.println(title);
+
+				checkHasOther(aList, "hdd600");
 				return true;
 			}
 		}
 
 		return false;
+	}
+
+	private void checkHasOther(Elements aList, String keyword) {
+		for (Element a : aList) {
+			String title = a.attr("title");
+			String testTitle = title.toLowerCase();
+			if (testTitle.contains("uncensored") && testTitle.contains(keyword)) {
+				System.out.println("has " + keyword + " !!!!!!!! " + title);
+				return;
+			}
+		}
 	}
 }

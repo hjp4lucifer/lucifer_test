@@ -17,11 +17,6 @@ public class AvmooImageDownload {
 	private final AvmooStar star;
 	private final File savePath;
 
-	public AvmooImageDownload(AvmooStar star, File savePath) {
-		this.star = star;
-		this.savePath = savePath;
-	}
-
 	public void downloadAndSave() throws Exception {
 		List<String> allMoviePageUrl = star.getAllMoviePageUrl();
 
@@ -49,6 +44,11 @@ public class AvmooImageDownload {
 		}
 
 //		httpSocket.close();
+	}
+
+	public AvmooImageDownload(AvmooStar star, File savePath) {
+		this.star = star;
+		this.savePath = savePath;
 	}
 
 	private void saveMovie(File savePath, AvmooMovie avmooMovie) throws Exception {
