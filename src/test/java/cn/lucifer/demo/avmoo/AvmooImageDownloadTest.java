@@ -19,7 +19,7 @@ import static org.junit.Assert.*;
 
 public class AvmooImageDownloadTest {
 
-	private static final String baseUrl = "https://avmoo.cdf/cn/star/";
+	private static final String baseUrl = "https://avmoo.cfd/cn/star/";
 
 	@Before
 	public void setUp() throws Exception {

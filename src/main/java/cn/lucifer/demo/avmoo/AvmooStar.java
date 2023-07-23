@@ -3,6 +3,7 @@ package cn.lucifer.demo.avmoo;
 import cn.lucifer.http.HttpClientException;
 import cn.lucifer.http.HttpMethod;
 import cn.lucifer.http.HttpSocket;
+import cn.lucifer.util.HttpClient5Helper;
 import cn.lucifer.util.HttpClientHelper;
 import com.google.common.collect.Lists;
 import org.apache.commons.httpclient.HttpException;
@@ -22,8 +23,11 @@ public class AvmooStar {
 
 	static {
 		httpHeads = new HashMap<>();
-		httpHeads.put("cookie", "_ga=GA1.2.419230642.1619936650; dom3ic8zudi28v8lr6fgphwffqoz0j6c=b7aec789-77f8-4327-acaa-9861fc9a359b%3A2%3A1; AD_enterTime=1637941205; __test; __PPU___PPU_SESSION_URL=%2Fcn; AD_clic_j_POPUNDER=2; pnState={\"impressions\":0,\"delayStarted\":0,\"page\":\"/cn/search/%E4%B8%89%E4%B8%8A%E6%82%A0%E4%BA%9C\"}; AD_exoc_j_M_728x90=1; AD_juic_j_P_728x90=1; AD_exoc_j_L_728x90=3; AD_exoc_j_POPUNDER=2");
+		httpHeads.put("cookie", "_ga=GA1.2.1024951988.1682909600; _gid=GA1.2.1512620022.1690035515; AD_exoc_j_M_728x90=1; AD_javu_j_P_728x90=1; AD_clic_j_POPUNDER=2; AD_exoc_j_POPUNDER=2; AD_adst_j_POPUNDER=2; dom3ic8zudi28v8lr6fgphwffqoz0j6c=5a04e05a-d81d-4556-8789-77c523655c91%3A3%3A1; AD_javu_j_POPUNDER=1; AD_enterTime=1690084268; AD_juic_j_L_728x90=0; AD_exoc_j_L_728x90=1; _gat=1; _ga_7JMF9KBRFV=GS1.2.1690083482.3.1.1690084269.0.0.0");
 		httpHeads.put("user-agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36");
+		httpHeads.put("accept","text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9");
+		httpHeads.put("accept-encoding","gzip, deflate, br");
+		httpHeads.put("accept-language","zh-CN,zh;q=0.9,en;q=0.8");
 	}
 
 	private String name;
@@ -88,7 +92,7 @@ public class AvmooStar {
 	}
 
 	static Document getDoc(String url) throws IOException, HttpClientException {
-		byte[] resp = HttpClientHelper.httpGet(url, null, httpHeads);
+		byte[] resp = HttpClient5Helper.httpGet(url, null, httpHeads);
 		return Jsoup.parse(new String(resp));
 	}
 
