@@ -12,7 +12,7 @@ public class FileRenameTest {
 
 	@Test
 	public void bt_xltd_rename() {
-		String basePath = "E:\\limit\\万人求购国际版抖音OnlyFans网红健身撸铁美女S级身材pup大胆自拍喜欢玩肛的女人\\P";
+		String basePath = "M:\\limit\\lspback.com极品辣妹Leeesovely李素英写真集A [195P1V-3.58GB]";
 		File folder = new File(basePath);
 		assertTrue(folder.exists());
 
