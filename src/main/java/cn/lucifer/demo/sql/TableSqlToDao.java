@@ -3,7 +3,7 @@ package cn.lucifer.demo.sql;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.commons.lang.text.StrBuilder;
+import org.apache.commons.lang3.text.StrBuilder;
 
 /**
  * used HeidiSQL's SQL format
@@ -67,7 +67,7 @@ public class TableSqlToDao extends TableSqlBase {
 		String modelParam = changeNameForField(className);
 		builder.append("\n\n\tpublic int add(").append(className).append(" ").append(modelParam).append(") {");
 		builder.append("\n\t\t");
-		builder.append("String sql = \"insert into ").append(tabelName).append("(");
+		builder.append("String sql = \"insert into ").append(tableName).append("(");
 		StrBuilder columnNames = new StrBuilder();
 		StrBuilder values = new StrBuilder();
 		StrBuilder getter = new StrBuilder();
@@ -110,7 +110,7 @@ public class TableSqlToDao extends TableSqlBase {
 		String modelParam = changeNameForField(className);
 		builder.append("\n\n\tpublic int update(").append(className).append(" ").append(modelParam).append(") {");
 		builder.append("\n\t\t");
-		builder.append("String sql = \"update ").append(tabelName).append(" set ");
+		builder.append("String sql = \"update ").append(tableName).append(" set ");
 
 		StrBuilder getter = new StrBuilder();
 		boolean isNotFirst = false;
@@ -151,7 +151,7 @@ public class TableSqlToDao extends TableSqlBase {
 			builder.append("\n\n\tpublic ").append(className).append(" getBy").append(changeNameForClass(idFieldName))
 					.append("(").append(primaryKey.type).append(" ").append(idFieldName).append(") {");
 			builder.append("\n\t\t");
-			builder.append(String.format("String sql = \"select * from %s where %s=\" + %s;", tabelName,
+			builder.append(String.format("String sql = \"select * from %s where %s=\" + %s;", tableName,
 					primaryKey.columnName, idFieldName));
 			builder.append("\n\t\tlog.debug(sql);");
 			builder.append("\n\t\treturn getJdbcTemplate().queryForObject(sql, rowMapper);");

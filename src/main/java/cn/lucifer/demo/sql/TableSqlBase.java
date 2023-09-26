@@ -8,18 +8,22 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.text.StrBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.text.StrBuilder;
 import org.apache.log4j.Logger;
+import org.slf4j.helpers.FormattingTuple;
+import org.slf4j.helpers.MessageFormatter;
 
 /**
  * used HeidiSQL's SQL format
- * 
+ *
  * @author Lucifer
  *
  */
 public class TableSqlBase {
 	public static Logger log = Logger.getLogger("lucifer_test");
+
+	protected boolean hasUserId;
 
 	protected final HashMap<String, String> typeMap;
 
@@ -28,8 +32,10 @@ public class TableSqlBase {
 		typeMap.put("BIGINT", "long");
 		typeMap.put("TIMESTAMP", "Date");
 		typeMap.put("INT", "int");
+		typeMap.put("MEDIUMINT", "int");
 		typeMap.put("TINYINT", "int");
 		typeMap.put("VARCHAR", "String");
+		typeMap.put("CHAR", "String");
 		typeMap.put("FLOAT", "float");
 		typeMap.put("DOUBLE", "double");
 		typeMap.put("SMALLINT", "int");
@@ -39,10 +45,10 @@ public class TableSqlBase {
 		typeMap.put("DECIMAL", "BigDecimal");
 	}
 
-	protected String tabelName;
+	protected String tableName;
 	protected String className;
 	protected String tableComment;
-	
+
 	/**
 	 * null表示非简单主键
 	 */
@@ -77,8 +83,8 @@ public class TableSqlBase {
 	}
 
 	protected LinkedList<FieldInfo> fieldList = new LinkedList<>();
-	
-	protected boolean checkFieldType(String columnType){
+
+	protected boolean checkFieldType(String columnType) {
 		for (FieldInfo f : fieldList) {
 			if (f.columnType.equals(columnType)) {
 				return true;
@@ -89,11 +95,11 @@ public class TableSqlBase {
 
 	public void parseSql(File file) throws IOException {
 		List<String> sqlLines = FileUtils.readLines(file);
-		tabelName = sqlLines.get(0);
-		tabelName = tabelName.substring(tabelName.indexOf("`") + 1, tabelName.lastIndexOf("`"));
-		log.debug("tabelName=" + tabelName);
+		tableName = sqlLines.get(0);
+		tableName = tableName.substring(tableName.indexOf("`") + 1, tableName.lastIndexOf("`"));
+		log.debug("tableName=" + tableName);
 
-		className = changeNameForClass(tabelName);
+		className = changeNameForClass(tableName);
 		log.debug("className=" + className);
 
 		for (int j = 1; j < sqlLines.size(); j++) {
@@ -191,6 +197,10 @@ public class TableSqlBase {
 			FieldInfo info = new FieldInfo(fieldName, columnName, columnType, commentStr, isAutoIncrement,
 					fieldTypeName, defaultType);
 			fieldList.add(info);
+
+			if ("user_id".equals(columnName)) {
+				hasUserId = true;
+			}
 		}
 	}
 
@@ -224,6 +234,18 @@ public class TableSqlBase {
 		return new String(array, 0, i);
 	}
 
+	protected String firstCharToLowerCase(String name) {
+		char[] array = new char[name.length()];
+		array[0] = Character.toLowerCase(name.charAt(0));
+		return new String(array);
+	}
+
+	protected String firstCharToUpperCase(String name) {
+		char[] array = new char[name.length()];
+		array[0] = Character.toUpperCase(name.charAt(0));
+		return new String(array);
+	}
+
 	protected String changeNameForField(String name) {
 		char[] array = new char[name.length()];
 		array[0] = Character.toLowerCase(name.charAt(0));
@@ -240,9 +262,8 @@ public class TableSqlBase {
 	}
 
 	/**
-	 * 
-	 * @param tCount
-	 *            \t的数量
+	 *
+	 * @param tCount \t的数量
 	 */
 	protected void newline(StrBuilder builder, int tCount) {
 		builder.append('\n');
@@ -250,6 +271,9 @@ public class TableSqlBase {
 			builder.append('\t');
 		}
 	}
-	
-	
+
+	public String generateMessage(String messagePattern, Object... argArray) {
+		FormattingTuple tuple = MessageFormatter.arrayFormat(messagePattern, argArray);
+		return tuple.getMessage();
+	}
 }

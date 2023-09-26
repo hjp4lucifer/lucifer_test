@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Stack;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.text.StrBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.text.StrBuilder;
 
 import cn.lucifer.demo.sql.TableSqlBase.FieldInfo;
 
@@ -115,7 +115,7 @@ public class TableSqlToMapper extends TableSqlBase {
 
 		tCount++;
 		newline(builder, tCount);
-		builder.append("insert into ").append(tabelName);
+		builder.append("insert into ").append(tableName);
 
 		// 处理columnName
 		newline(builder, tCount);
