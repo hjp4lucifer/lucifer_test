@@ -32,6 +32,14 @@ public class TableSqlTest {
 	}
 
 	@Test
+	public void testTableSqlToModelV2() throws IOException {
+		TableSqlToModelV2 tableSqlToModel = new TableSqlToModelV2();
+		String str = tableSqlToModel.generate(new File(
+				"resource/sql/createTable.sql"));
+		System.out.println(str);
+	}
+
+	@Test
 	public void testTableSqlToDao() throws IOException {
 		TableSqlToDao tableSqlToDao = new TableSqlToDao();
 		String str = tableSqlToDao.generate(new File(

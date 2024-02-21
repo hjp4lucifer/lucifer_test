@@ -29,16 +29,16 @@ public class TableSqlBase {
 
 	public TableSqlBase() {
 		typeMap = new HashMap<>();
-		typeMap.put("BIGINT", "long");
+		typeMap.put("BIGINT", "Long");
 		typeMap.put("TIMESTAMP", "Date");
-		typeMap.put("INT", "int");
-		typeMap.put("MEDIUMINT", "int");
-		typeMap.put("TINYINT", "int");
+		typeMap.put("INT", "Integer");
+		typeMap.put("MEDIUMINT", "Integer");
+		typeMap.put("TINYINT", "Integer");
 		typeMap.put("VARCHAR", "String");
 		typeMap.put("CHAR", "String");
-		typeMap.put("FLOAT", "float");
-		typeMap.put("DOUBLE", "double");
-		typeMap.put("SMALLINT", "int");
+		typeMap.put("FLOAT", "Float");
+		typeMap.put("DOUBLE", "Double");
+		typeMap.put("SMALLINT", "Integer");
 		typeMap.put("TEXT", "String");
 		typeMap.put("DATE", "Date");
 		typeMap.put("BLOB", "byte[]");

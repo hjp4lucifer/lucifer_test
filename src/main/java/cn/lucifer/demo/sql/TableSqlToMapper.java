@@ -30,7 +30,7 @@ public class TableSqlToMapper extends TableSqlBase {
 		lineList.add("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
 		lineList.add(
 				"<!DOCTYPE mapper PUBLIC \"-//mybatis.org//DTD Mapper 3.0//EN\" \"http://mybatis.org/dtd/mybatis-3-mapper.dtd\" >");
-		lineList.add(String.format("<mapper namespace=\"%sDao\">", className));
+		lineList.add(String.format("<mapper namespace=\"xxx.%sDao\">", className));
 		stack.push("</mapper>");
 
 		generateResultMap();
@@ -71,7 +71,7 @@ public class TableSqlToMapper extends TableSqlBase {
 
 		StrBuilder builder = new StrBuilder();
 		builder.append("\t");
-		builder.append("<resultMap id=\"").append(name_BaseResultMap).append("\" type=\"").append(className)
+		builder.append("<resultMap id=\"").append(name_BaseResultMap).append("\" type=\"xxx.").append(className)
 				.append("\">");
 
 		tCount++;
@@ -111,7 +111,7 @@ public class TableSqlToMapper extends TableSqlBase {
 		StrBuilder builder = new StrBuilder();
 		builder.append("\t");
 		builder.append("<insert id=\"insertSelective\" useGeneratedKeys=\"true\"  keyProperty=\"")
-				.append(primaryKey.name).append("\" parameterType=\"").append(className).append("\" >");
+				.append(primaryKey.name).append("\" parameterType=\"xxx.").append(className).append("\" >");
 
 		tCount++;
 		newline(builder, tCount);
