@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Stack;
 
+import cn.lucifer.util.StrUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.StrBuilder;
 
@@ -36,6 +37,11 @@ public class TableSqlToMapper extends TableSqlBase {
 		generateResultMap();
 		generateBaseColumnList();
 		generateAdd();
+
+		generateUpdateById();
+		generateUpdateByCondition();
+
+		generateSelectById();
 
 		popStack2LineList();
 
@@ -103,6 +109,137 @@ public class TableSqlToMapper extends TableSqlBase {
 			return "INTEGER";
 		}
 		return info.columnType;
+	}
+
+	protected void generateSelectById() {
+		int tCount = 1;
+
+		StrBuilder builder = new StrBuilder();
+		builder.append("\t");
+		builder.append("<select id=\"selectByPrimaryKey\" resultMap=\"BaseResultMap\">");
+
+		tCount++;
+		newline(builder, tCount);
+		builder.append("select");
+		newline(builder, tCount);
+		builder.append("<include refid=\"Base_Column_List\" />");
+		newline(builder, tCount);
+		builder.append("from ").append(tableName);
+		newline(builder, tCount);
+		builder.append("where ").append(primaryKey.columnName).append("=#{").append(primaryKey.name).append("}");
+		tCount--;
+
+		newline(builder, tCount);
+		builder.append("</select>");
+		lineList.add(builder.toString());
+	}
+
+	protected void generateUpdateById() {
+		int tCount = 1;
+
+		StrBuilder builder = new StrBuilder();
+		builder.append("\t");
+		builder.append(StrUtils.generateMessage(
+				"<update id=\"updateByPrimaryKeySelective\" parameterType=\"xxx.{}\" >", className));
+
+		tCount++;
+		newline(builder, tCount);
+		builder.append("update ").append(tableName);
+
+		// 处理columnName
+		newline(builder, tCount);
+		builder.append("<set>");
+		tCount++;
+		for (FieldInfo info : fieldList) {
+			if (info.isAutoIncrement) {
+				continue;
+			}
+
+			int subStackCount = 0;
+			// 首字母是大写
+			if (info.type.charAt(0) == Character.toUpperCase(info.type.charAt(0))) {
+				newline(builder, tCount);
+				builder.append("<if test=\"").append(info.name).append(" != null\">");
+				subStackCount = pushStack("</if>", subStackCount);
+			}
+			newline(builder, tCount + 1);
+			builder.append(info.columnName).append("=#{").append(info.name).append("},");
+
+			subStackCount = checkSubStackCount(tCount, builder, subStackCount);
+		}
+		tCount--;
+		newline(builder, tCount);
+		builder.append("</set>");
+		newline(builder, tCount);
+		builder.append("where ").append(primaryKey.columnName).append("=#{").append(primaryKey.name).append("}");
+		tCount--;
+
+		newline(builder, tCount);
+		builder.append("</update>");
+		lineList.add(builder.toString());
+	}
+
+	protected void generateUpdateByCondition() {
+		int tCount = 1;
+
+		StrBuilder builder = new StrBuilder();
+		builder.append("\t");
+		builder.append(StrUtils.generateMessage(
+				"<update id=\"updateByCondition\" >", className));
+
+		tCount++;
+		newline(builder, tCount);
+		builder.append("update ").append(tableName);
+
+		// 处理columnName
+		newline(builder, tCount);
+		builder.append("<set>");
+		tCount++;
+		for (FieldInfo info : fieldList) {
+			if (info.isAutoIncrement) {
+				continue;
+			}
+
+			int subStackCount = 0;
+			// 首字母是大写
+			if (info.type.charAt(0) == Character.toUpperCase(info.type.charAt(0))) {
+				newline(builder, tCount);
+				builder.append("<if test=\"updateValue.").append(info.name).append(" != null\">");
+				subStackCount = pushStack("</if>", subStackCount);
+			}
+			newline(builder, tCount + 1);
+			builder.append(info.columnName).append("=#{updateValue.").append(info.name).append("},");
+
+			subStackCount = checkSubStackCount(tCount, builder, subStackCount);
+		}
+		tCount--;
+		newline(builder, tCount);
+		builder.append("</set>");
+		newline(builder, tCount);
+		builder.append("<where> 1");
+
+		for (FieldInfo info : fieldList) {
+			int subStackCount = 0;
+			// 首字母是大写
+			if (info.type.charAt(0) == Character.toUpperCase(info.type.charAt(0))) {
+				newline(builder, tCount);
+				builder.append("<if test=\"condition.").append(info.name).append(" != null\">");
+				subStackCount = pushStack("</if>", subStackCount);
+			}
+
+			newline(builder, tCount + 1);
+			builder.append("and ").append(info.columnName).append("=#{condition.").append(info.name).append("}");
+
+			subStackCount = checkSubStackCount(tCount, builder, subStackCount);
+		}
+
+		tCount--;
+		newline(builder, tCount);
+		builder.append("</where>");
+
+		newline(builder, tCount);
+		builder.append("</update>");
+		lineList.add(builder.toString());
 	}
 
 	protected void generateAdd() {

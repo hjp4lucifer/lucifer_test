@@ -40,13 +40,20 @@ public class TableSqlTest {
 	}
 
 	@Test
+	public void testTableSqlToModelVO() throws IOException {
+		TableSqlToModelVO tableSqlToModel = new TableSqlToModelVO();
+		String str = tableSqlToModel.generate(new File("resource/sql/createTable.sql"));
+		System.out.println(str);
+	}
+
+	@Test
 	public void testTableSqlToDao() throws IOException {
 		TableSqlToDao tableSqlToDao = new TableSqlToDao();
 		String str = tableSqlToDao.generate(new File(
 				"resource/sql/createTable.sql"));
 		System.out.println(str);
 	}
-	
+
 	@Test
 	public void testTableSqlToMapper() throws IOException {
 		TableSqlToMapper sqlToMapper = new TableSqlToMapper();
