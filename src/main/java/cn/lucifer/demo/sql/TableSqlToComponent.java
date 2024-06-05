@@ -1,5 +1,6 @@
 package cn.lucifer.demo.sql;
 
+import cn.lucifer.util.StrUtils;
 import org.apache.commons.lang3.text.StrBuilder;
 
 import java.io.File;
@@ -311,6 +312,11 @@ public class TableSqlToComponent extends TableSqlToWrapsModel {
 		builder.append("\tint insertSelective(").append(className).append(" ").append(classParam).append(");\n\n");
 		builder.append("\tint updateByPrimaryKeySelective(").append(className).append(" ").append(classParam)
 				.append(");\n\n");
+
+		builder.append(StrUtils.generateMessage(
+				"\tint updateByCondition(@Param(\"updateValue\") {} updateValue, @Param(\"condition\") Update{}Condition condition);\n\n",
+				className, className));
+
 		builder.append("\t").append(className).append(" selectByPrimaryKey(").append(primaryKey.type).append(" ")
 				.append(primaryKey.name).append(");\n\n");
 

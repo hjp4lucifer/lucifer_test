@@ -46,6 +46,7 @@ public class TableSqlTest {
 		System.out.println(str);
 	}
 
+	@Deprecated
 	@Test
 	public void testTableSqlToDao() throws IOException {
 		TableSqlToDao tableSqlToDao = new TableSqlToDao();
@@ -59,6 +60,13 @@ public class TableSqlTest {
 		TableSqlToMapper sqlToMapper = new TableSqlToMapper();
 		String str = sqlToMapper.generate(new File(
 				"resource/sql/createTable.sql"));
+		System.out.println(str);
+	}
+
+	@Test
+	public void testTableSqlToComponent() throws IOException {
+		TableSqlToComponent sqlToComponent = new TableSqlToComponent();
+		String str = sqlToComponent.generate(new File("resource/sql/createTable.sql"));
 		System.out.println(str);
 	}
 }

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.StrBuilder;
 import org.apache.log4j.Logger;
@@ -236,12 +237,14 @@ public class TableSqlBase {
 
 	protected String firstCharToLowerCase(String name) {
 		char[] array = new char[name.length()];
+		name.getChars(0, name.length(), array, 0);
 		array[0] = Character.toLowerCase(name.charAt(0));
 		return new String(array);
 	}
 
 	protected String firstCharToUpperCase(String name) {
 		char[] array = new char[name.length()];
+		name.getChars(0, name.length(), array, 0);
 		array[0] = Character.toUpperCase(name.charAt(0));
 		return new String(array);
 	}

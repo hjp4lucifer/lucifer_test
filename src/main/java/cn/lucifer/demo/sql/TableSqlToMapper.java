@@ -36,11 +36,15 @@ public class TableSqlToMapper extends TableSqlBase {
 
 		generateResultMap();
 		generateBaseColumnList();
+
+		lineList.add("");
 		generateAdd();
 
+		lineList.add("");
 		generateUpdateById();
+		lineList.add("");
 		generateUpdateByCondition();
-
+		lineList.add("");
 		generateSelectById();
 
 		popStack2LineList();
@@ -217,6 +221,7 @@ public class TableSqlToMapper extends TableSqlBase {
 		builder.append("</set>");
 		newline(builder, tCount);
 		builder.append("<where> 1");
+		tCount++;
 
 		for (FieldInfo info : fieldList) {
 			int subStackCount = 0;
@@ -237,6 +242,7 @@ public class TableSqlToMapper extends TableSqlBase {
 		newline(builder, tCount);
 		builder.append("</where>");
 
+		tCount--;
 		newline(builder, tCount);
 		builder.append("</update>");
 		lineList.add(builder.toString());
@@ -309,6 +315,7 @@ public class TableSqlToMapper extends TableSqlBase {
 			subStackCount = checkSubStackCount(tCount, builder, subStackCount);
 		}
 
+		tCount--;
 		newline(builder, tCount);
 		builder.append("</trim>");
 		tCount--;
