@@ -46,7 +46,7 @@ public class RenameFileByNumberService {
 						allFiles[0].getParentFile().getAbsolutePath(),
 						dto.getFileFormat(), dto.getMaxNumLen(), dto.getMinNumLen());
 				logger.info(msg);
-				return;
+				continue;
 			}
 
 			String fileNameNumFormat = StrUtils.generateStr("%0{}d", dto.getMaxNumLen());
@@ -81,6 +81,7 @@ public class RenameFileByNumberService {
 					continue;
 				}
 				logger.info(StrUtils.generateStr("oldFn={}, newFn={}, parent={}", fn, newFn, f.getParent()));
+				f.renameTo(new File(f.getParentFile(), newFn));
 			}
 		}
 
