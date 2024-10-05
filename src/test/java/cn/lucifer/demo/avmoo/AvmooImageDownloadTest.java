@@ -22,19 +22,13 @@ import static org.junit.Assert.*;
 
 public class AvmooImageDownloadTest {
 
-	private static final String baseUrl = "https://avmoo.cfd/cn/star/";
+	private static final String baseUrl = "https://avmoo.online/cn/star/";
+
+	private ImmutableList<AvmooStar> all_list;
 
 	@Before
 	public void setUp() throws Exception {
-	}
-
-	@After
-	public void tearDown() throws Exception {
-	}
-
-	@Test
-	public void download() throws Exception {
- 		ImmutableList<AvmooStar> list = ImmutableList.<AvmooStar>builder()
+		ImmutableList<AvmooStar> list = ImmutableList.<AvmooStar>builder()
 				.add(new AvmooStar("桃乃木かな", baseUrl + "6a85f721d4b46ea4", true))
 				.add(new AvmooStar("三上悠亜", baseUrl + "aa1709fc6ffeb4f6", true))
 				.add(new AvmooStar("七ツ森りり", baseUrl + "17f01576bb6b6755", true))
@@ -48,13 +42,19 @@ public class AvmooImageDownloadTest {
 				.add(new AvmooStar("坂井千晴", baseUrl + "5c29980ed4e78fea", true))
 //				.add(new AvmooStar("玉城夏帆", baseUrl + "836614b4c600cbc0", true))
 				.add(new AvmooStar("西宮ゆめ", baseUrl + "51019f9c2a2d8a88", true))
-				.add(new AvmooStar("月乃ルナ", baseUrl + "4c5897d337e8f80d", true))
+//				.add(new AvmooStar("月乃ルナ", baseUrl + "4c5897d337e8f80d", true))
+				.add(new AvmooStar("八蜜凛", baseUrl + "ada166853d374c22", true))
 				.build();
+		all_list = list;
+	}
 
-		for (AvmooStar star : list) {
-			if (!"月乃ルナ".equals(star.getName())) {
-				continue;
-			}
+	@After
+	public void tearDown() throws Exception {
+	}
+
+	@Test
+	public void download() throws Exception {
+		for (AvmooStar star : all_list) {
 
 			final File savePath = new File("E:\\limit\\" + star.getName());
 
@@ -64,5 +64,18 @@ public class AvmooImageDownloadTest {
 
 	}
 
+	@Test
+	public void downloadSingle() throws Exception {
 
+		for (AvmooStar star : all_list) {
+			if (!"八蜜凛".equals(star.getName())) {
+				continue;
+			}
+			final File savePath = new File("E:\\limit\\" + star.getName());
+
+			AvmooImageDownload avmooImageDownload = new AvmooImageDownload(star, savePath);
+			avmooImageDownload.downloadAndSave();
+		}
+
+	}
 }

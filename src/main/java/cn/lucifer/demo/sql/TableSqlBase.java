@@ -7,12 +7,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 
+import cn.lucifer.util.StrUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.StrBuilder;
 import org.apache.log4j.Logger;
-import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MessageFormatter;
 
 /**
@@ -276,7 +276,6 @@ public class TableSqlBase {
 	}
 
 	public String generateMessage(String messagePattern, Object... argArray) {
-		FormattingTuple tuple = MessageFormatter.arrayFormat(messagePattern, argArray);
-		return tuple.getMessage();
+		return StrUtils.generateStr(messagePattern, argArray);
 	}
 }
