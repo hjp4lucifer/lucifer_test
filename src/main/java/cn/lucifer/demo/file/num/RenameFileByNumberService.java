@@ -24,9 +24,21 @@ public class RenameFileByNumberService {
 	private final String numberRegex = "\\d+";
 	private final Pattern numberPattern = Pattern.compile(numberRegex);
 
-	public Pair<File[], File[]> leftFileRightFolder(File folder) {
+	public Pair<File[], File[]> leftFileRightFolder(File folder, List<String> excludeFolderList) {
 		File[] allFiles = folder.listFiles(file -> !file.isDirectory());
-		File[] allDirectory = folder.listFiles(File::isDirectory);
+		File[] allDirectory = folder.listFiles(file -> {
+			if (!file.isDirectory()) {
+				return false;
+			}
+			if (null != excludeFolderList) {
+				for (String exFolder : excludeFolderList) {
+					if (exFolder.equals(file.getName())) {
+						return false;
+					}
+				}
+			}
+			return true;
+		});
 
 		return Pair.of(allFiles, allDirectory);
 	}
