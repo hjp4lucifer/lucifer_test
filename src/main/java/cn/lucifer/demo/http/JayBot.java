@@ -7,6 +7,7 @@ import com.google.common.collect.Lists;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hc.client5.http.cookie.BasicCookieStore;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -25,14 +26,11 @@ public class JayBot {
 
 	private static final String URL_TEMPLATE = "/search?wd=";
 
-	private final String cookie;
+	private final BasicCookieStore cookieStore;
 
-	private final Map<String, String> header = new HashMap<>();
 
-	public JayBot(String cookie) {
-		this.cookie = cookie;
-		// 基本请求头设置
-		header.put("cookie", cookie);
+	public JayBot(BasicCookieStore cookieStore) {
+		this.cookieStore = cookieStore;
 	}
 
 	public List<String> search(String keyword) throws IOException, HttpClientException {
@@ -45,6 +43,49 @@ public class JayBot {
 		for (Element itemImg : itemImgList) {
 			String detailUrl = itemImg.attr("href");
 			resultList.add(detailUrl);
+		}
+		return resultList;
+	}
+
+	public List<JayBotItemInfo> searchV2(String keyword) throws IOException, HttpClientException {
+		String url = BASE_URL + URL_TEMPLATE + keyword;
+
+		Document doc = getDoc(url);
+		Elements thumbnailList = doc.select(".thumbnail");
+
+		List<JayBotItemInfo> resultList = Lists.newArrayListWithExpectedSize(thumbnailList.size());
+		for (Element thumbnail : thumbnailList) {
+			Element caption = thumbnail.select(".caption").get(0);
+
+			JayBotItemInfo result = new JayBotItemInfo();
+			String title = caption.select("h3").get(0).text();
+			String[] split = StringUtils.split(title, " ");
+
+			result.videoNum = split[0];
+			result.name = title;
+			for (int i = 2; i < split.length; i++) {
+				String a = split[i];
+				if (a.length() >= 10) {
+					continue;
+				}
+				if (null == result.actress) {
+					result.actress = a;
+				} else {
+					result.actress += "，" + a;
+				}
+			}
+
+			Elements pList = caption.select("p");
+			for (Element p : pList) {
+				String text = p.text();
+				if (text.startsWith("評分：")) {
+					result.score = StringUtils.substringAfter(text, "評分：");
+				} else if (text.startsWith("發行日：")) {
+					result.createTime = StringUtils.substringAfter(text, "發行日：");
+				}
+			}
+
+			resultList.add(result);
 		}
 		return resultList;
 	}
@@ -82,7 +123,7 @@ public class JayBot {
 	}
 
 	private Document getDoc(String url) throws IOException, HttpClientException {
-		byte[] resp = HttpClient5Helper.httpGet(url, null, header);
+		byte[] resp = HttpClient5Helper.httpGet(url, null, null, cookieStore);
 		String str = new String(resp);
 		return Jsoup.parse(str);
 	}

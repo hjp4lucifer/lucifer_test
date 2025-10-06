@@ -8,6 +8,7 @@ import com.google.common.collect.Lists;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hc.client5.http.cookie.BasicCookieStore;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -39,15 +40,13 @@ public class CilimaoApp {
 	private Pattern pattern = Pattern.compile(regex);
 
 	private final String loadEndTime;
-	private final String cookie;
+	private final BasicCookieStore cookieStore;
 
 	private final Map<String, String> header = new HashMap<>();
 
-	public CilimaoApp(String loadEndTime, String cookie) {
+	public CilimaoApp(String loadEndTime, BasicCookieStore cookieStore) {
 		this.loadEndTime = loadEndTime;
-		this.cookie = cookie;
-
-		this.header.put("cookie", cookie);
+		this.cookieStore = cookieStore;
 	}
 
 	public List<CilimaoLinkedInfo> getLinkedInfoList(int page) throws IOException, HttpClientException {
@@ -82,7 +81,7 @@ public class CilimaoApp {
 
 			// 创建Matcher对象
 			Matcher matcher = pattern.matcher(r.name);
-			if(!matcher.matches()){
+			if (!matcher.matches()) {
 				logger.warn("不符合定义的文件格式! fileName={}", r.name);
 				continue;
 			}
@@ -94,7 +93,7 @@ public class CilimaoApp {
 	}
 
 	private Document getDoc(String url) throws IOException, HttpClientException {
-		byte[] resp = HttpClient5Helper.httpGet(url, null, header);
+		byte[] resp = HttpClient5Helper.httpGet(url, null, null, cookieStore);
 		String str = new String(resp);
 		String[] strList = StringUtils.substringsBetween(str, "window.atob(\"", "\")");
 
