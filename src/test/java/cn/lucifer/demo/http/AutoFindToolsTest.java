@@ -36,7 +36,7 @@ public class AutoFindToolsTest {
 			limitGirlMap.put(split[0], split[1]);
 		}
 
-		final String loadEndTime = "2025-09-13";
+		final String loadEndTime = "2025-10-06";
 		final String startVideo = "300MIUM-1251";
 
 		final List<String> outLineList = Lists.newArrayList();
@@ -56,11 +56,18 @@ public class AutoFindToolsTest {
 
 		JayBot jayBot = new JayBot(jayBotCookieStore);
 		boolean isFirst = false;
+
+		loopA:
 		for (int i = 1; i <= 100; i++) {
 			List<CilimaoLinkedInfo> linkedInfoList = cilimaoApp.getLinkedInfoList(i);
 			logger.info("page={}, linkedInfoList = {}", i, JSON.toJSONString(linkedInfoList));
 
 			for (CilimaoLinkedInfo linkedInfo : linkedInfoList) {
+				if (loadEndTime.equals(linkedInfo.createTime)) {
+					logger.info("到达loadEndTime!!!!");
+					break loopA;
+				}
+
 				String name = StringUtils.removeEnd(linkedInfo.name, "-uncensored-HD");
 				if (startVideo.equals(name)) {
 					isFirst = false;

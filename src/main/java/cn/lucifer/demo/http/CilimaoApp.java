@@ -74,10 +74,6 @@ public class CilimaoApp {
 
 			logger.info("infoDto={}", JSON.toJSONString(r));
 
-			if (loadEndTime.equals(r.createTime)) {
-				logger.info("到达loadEndTime!!!!");
-				break;
-			}
 
 			// 创建Matcher对象
 			Matcher matcher = pattern.matcher(r.name);
