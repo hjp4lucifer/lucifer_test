@@ -47,7 +47,7 @@ public class RenameFileByNumberServiceTest {
 	public void Yeha_rename() {
 //		final String basePath = "M:\\limit\\▌Yeha▌";
 //		final String basePath = "L:\\limit_pic\\▌Pure Media▌（精品收集）";
-		final String basePath = "M:\\limit\\▌Pure Media▌（精品收集）\\Vol.093 Sira\\[PURE MEDIA] Vol.093 - Sira。【TG：swdashen】";
+		final String basePath = "M:\\limit\\▌Pure Media▌（精品收集）\\Vol.127 Son Ye-Eun (손예은)";
 		// 分析文件的数字构成
 		File folder = new File(basePath);
 		assertTrue(folder.exists());
