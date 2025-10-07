@@ -1,8 +1,8 @@
 package cn.lucifer.demo.http;
 
+import cn.lucifer.demo.http.dict.CilimaoSearchTypeEnum;
 import cn.lucifer.demo.http.domain.CilimaoLinkedInfo;
 import cn.lucifer.demo.http.domain.JayBotItemInfo;
-import cn.lucifer.http.HttpClientException;
 import cn.lucifer.util.StrUtils;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
@@ -24,41 +24,49 @@ import java.util.*;
 public class AutoFindToolsTest {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+	private static final String javbot3_cookie = "bfbd41e1e476c8e9df45632ecad6f4f9";
+	private static final String load_file_date = "20251008";
 
 	@Test
-	public void autoFind() throws Exception {
-		File limitGirlFile = new File("M:\\limit\\aaa\\limit_girl_20250928.txt");
-		List<String> limitGirlList = FileUtils.readLines(limitGirlFile, "utf-8");
-
-		Map<String, String> limitGirlMap = Maps.newHashMapWithExpectedSize(limitGirlList.size());
-		for (String girl : limitGirlList) {
-			String[] split = StringUtils.split(girl, '\t');
-			limitGirlMap.put(split[0], split[1]);
-		}
-
+	public void autoFind_uncensored() throws Exception {
 		final String loadEndTime = "2025-10-06";
-		final String startVideo = "300MIUM-1251";
+		final String startVideo = "";
+		final File oldFile = new File("M:\\limit\\aaa\\limit_search_result\\error_20251006_220526.txt");
+		autoFind(CilimaoSearchTypeEnum.uncensored_HD, loadEndTime, startVideo, oldFile);
+	}
+
+	@Test
+	public void autoFind_hdd600() throws Exception {
+		final String loadEndTime = "2021-10-20";
+		final String startVideo = "";
+		autoFind(CilimaoSearchTypeEnum.hdd600, loadEndTime, startVideo, null);
+	}
+
+
+	private void autoFind(CilimaoSearchTypeEnum searchTypeEnum, String loadEndTime,
+						  String startVideo, File oldFile) throws Exception {
+		final Map<String, String> limitGirlMap = loadFile("M:\\limit\\aaa\\limit_girl_{}.txt");
+		final Map<String, String> limitMp4Map = loadFile("M:\\limit\\aaa\\limit_mp4_{}.txt");
 
 		final List<String> outLineList = Lists.newArrayList();
-		final File oldFile = new File("M:\\limit\\aaa\\limit_search_result\\error_20251006_220526.txt");
-		if (oldFile.exists()) {
+		if (null!= oldFile && oldFile.exists()) {
 			outLineList.addAll(FileUtils.readLines(oldFile, "utf-8"));
 			outLineList.add("\n\n\n\n\n\n");
 		}
 
-		CilimaoApp cilimaoApp = new CilimaoApp(loadEndTime, new BasicCookieStore());
+		CilimaoApp cilimaoApp = new CilimaoApp(searchTypeEnum, new BasicCookieStore());
 		BasicCookieStore jayBotCookieStore = new BasicCookieStore();
 		{
-			BasicClientCookie cookie = new BasicClientCookie("csrf_cookie", "418d2a9f76559a65b96e2e04496ce2a4");
+			BasicClientCookie cookie = new BasicClientCookie("csrf_cookie", javbot3_cookie);
 			cookie.setDomain("javbot3.top");
 			jayBotCookieStore.addCookie(cookie);
 		}
 
 		JayBot jayBot = new JayBot(jayBotCookieStore);
-		boolean isFirst = false;
+		boolean isFirst = StringUtils.isNotBlank(startVideo);
 
 		loopA:
-		for (int i = 1; i <= 100; i++) {
+		for (int i = 1; i <= 25; i++) {
 			List<CilimaoLinkedInfo> linkedInfoList = cilimaoApp.getLinkedInfoList(i);
 			logger.info("page={}, linkedInfoList = {}", i, JSON.toJSONString(linkedInfoList));
 
@@ -68,7 +76,8 @@ public class AutoFindToolsTest {
 					break loopA;
 				}
 
-				String name = StringUtils.removeEnd(linkedInfo.name, "-uncensored-HD");
+				String name = StringUtils.removeEnd(linkedInfo.name, searchTypeEnum.getSuffix());
+				name = StringUtils.removeStart(name, searchTypeEnum.getPrefix());
 				if (startVideo.equals(name)) {
 					isFirst = false;
 				} else if (isFirst) {
@@ -99,8 +108,12 @@ public class AutoFindToolsTest {
 					outLine.append(StringUtils.defaultString(girlRating, "unknowns")).append('\t');
 					outLine.append(videoInfo.actress).append('\t');
 					outLine.append(linkedInfo.name).append('\t');
+					if (limitMp4Map.containsKey(linkedInfo.name)) {
+						outLine.append("exists!!!").append('\t');
+					}
 					outLine.append(videoInfo.score).append('\t');
 					outLine.append(linkedInfo.url).append('\t');
+					outLine.append(linkedInfo.createTime).append('\t');
 					outLine.append(videoInfo.name);
 
 					String str = outLine.toString();
@@ -112,10 +125,28 @@ public class AutoFindToolsTest {
 			}
 		}
 
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-		final String outFn = StrUtils.generateMessage("M:\\limit\\aaa\\limit_search_result\\limit_search_result_{}.txt", dateFormat.format(new Date()));
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
+		final String outFn = StrUtils.generateMessage("M:\\limit\\aaa\\limit_search_result\\limit_search_{}_result_{}.txt",
+				searchTypeEnum.name(), dateFormat.format(new Date()));
 
 		FileUtils.writeLines(new File(outFn), "utf-8", outLineList);
+	}
+
+	private Map<String, String> loadFile(String loadFileTemplate) throws Exception {
+		String fileName = StrUtils.generateMessage(loadFileTemplate, load_file_date);
+		final File loadFile = new File(fileName);
+		if (!loadFile.exists()) {
+			throw new RuntimeException("loadFile not exists");
+		}
+
+		List<String> lineList = FileUtils.readLines(loadFile, "utf-8");
+		Map<String, String> limitGirlMap = Maps.newHashMapWithExpectedSize(lineList.size());
+		for (String girl : lineList) {
+			String[] split = StringUtils.split(girl, '\t');
+			limitGirlMap.put(split[0], split[1]);
+		}
+
+		return limitGirlMap;
 	}
 
 	private List<JayBotItemInfo> searchV2(JayBot jayBot, String name, List<String> outLineList, int page) throws Exception {
@@ -142,8 +173,7 @@ public class AutoFindToolsTest {
 
 	@Test
 	public void cilimaoApp() throws Exception {
-		final String loadEndTime = "2025-10-04";
-		CilimaoApp cilimaoApp = new CilimaoApp(loadEndTime, null);
+		CilimaoApp cilimaoApp = new CilimaoApp(CilimaoSearchTypeEnum.hdd600, null);
 
 		for (int i = 2; i <= 2; i++) {
 			List<CilimaoLinkedInfo> resultList = cilimaoApp.getLinkedInfoList(i);

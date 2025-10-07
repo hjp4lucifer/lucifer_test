@@ -1,8 +1,10 @@
 package cn.lucifer.demo.http;
 
+import cn.lucifer.demo.http.dict.CilimaoSearchTypeEnum;
 import cn.lucifer.demo.http.domain.CilimaoLinkedInfo;
 import cn.lucifer.http.HttpClientException;
 import cn.lucifer.util.HttpClient5Helper;
+import cn.lucifer.util.StrUtils;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import org.apache.commons.codec.binary.Base64;
@@ -17,9 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,26 +31,25 @@ public class CilimaoApp {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	private static final String BASE_URL = "https://clm50.top/";
-	private static final String URL_TEMPLATE = "search?word=dW5jZW5zb3JlZC1IRA&sort=time&p=";
+	private final String url_template;
 
 	// 定义正则表达式
-	private String regex = "[\\d\\w]+-\\d+-uncensored-HD";
+	private final String regex;
 
 	// 编译Pattern对象
-	private Pattern pattern = Pattern.compile(regex);
+	private final Pattern pattern;
 
-	private final String loadEndTime;
 	private final BasicCookieStore cookieStore;
 
-	private final Map<String, String> header = new HashMap<>();
-
-	public CilimaoApp(String loadEndTime, BasicCookieStore cookieStore) {
-		this.loadEndTime = loadEndTime;
+	public CilimaoApp(CilimaoSearchTypeEnum searchType, BasicCookieStore cookieStore) {
 		this.cookieStore = cookieStore;
+		this.regex = searchType.getRegex();
+		this.pattern = Pattern.compile(regex);
+		this.url_template = StrUtils.generateMessage("search?word={}&sort=time&p=", searchType.getKeyword());
 	}
 
 	public List<CilimaoLinkedInfo> getLinkedInfoList(int page) throws IOException, HttpClientException {
-		String urlStr = BASE_URL + URL_TEMPLATE + page;
+		String urlStr = BASE_URL + url_template + page;
 		logger.info("load url={}", urlStr);
 
 		Document doc = getDoc(urlStr);
@@ -96,5 +95,6 @@ public class CilimaoApp {
 		resp = Base64.decodeBase64(strList[0]);
 		return Jsoup.parse(URIUtil.decode(new String(resp)));
 	}
+
 
 }
