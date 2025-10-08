@@ -29,7 +29,7 @@ public class LimitAutoFindTools {
 	private final int startPage;
 	private final String startVideo;
 	private final String javbot3Cookie;
-	private final String loadFileDate ;
+	private final String loadFileDate;
 	private final File resultFolder;
 
 	public LimitAutoFindTools(int startPage, String startVideo, String javbot3Cookie, String loadFileDate, File resultFolder) {
@@ -136,7 +136,7 @@ public class LimitAutoFindTools {
 		FileUtils.writeLines(new File(resultFolder, outFn), "utf-8", outLineList);
 	}
 
-	private Map<String, String> loadFile(String loadFileTemplate) throws Exception {
+	protected Map<String, String> loadFile(String loadFileTemplate) throws Exception {
 		String fileName = StrUtils.generateMessage(loadFileTemplate, loadFileDate);
 		final File loadFile = new File(fileName);
 		if (!loadFile.exists()) {
@@ -147,7 +147,29 @@ public class LimitAutoFindTools {
 		Map<String, String> limitGirlMap = Maps.newHashMapWithExpectedSize(lineList.size());
 		for (String girl : lineList) {
 			String[] split = StringUtils.split(girl, '\t');
-			limitGirlMap.put(split[0], split[1]);
+			String key = split[0];
+			String value = split[1];
+			limitGirlMap.put(key, value);
+
+			// 多名字识别
+			if (value.length() <= 3) {
+				// 确保value是等级，而不是子目录
+				if (key.endsWith("）") && key.contains("（")) {
+					String current = StringUtils.substringBefore(key, "（");
+					limitGirlMap.put(current, value);
+
+					String special = StringUtils.substringBetween(key, "（", "）");
+					limitGirlMap.put(special, value);
+
+					if (special.contains("、")) {
+						String[] specialArray = StringUtils.split(special, '、');
+						for (String specialName : specialArray) {
+							limitGirlMap.put(specialName, value);
+						}
+					}
+				}
+			}
+
 		}
 
 		return limitGirlMap;

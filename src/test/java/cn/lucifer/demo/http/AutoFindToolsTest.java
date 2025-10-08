@@ -28,10 +28,10 @@ public class AutoFindToolsTest {
 	/**
 	 * 如：JUR-417
 	 */
-	private static final String startVideo = "";
-	private static final String javbot3_cookie = "77bf74e057abc7156673d37aabd4f92e";
-	private static final String load_file_date = "20251008";
-	private final File result_folder = new File("M:\\limit\\aaa\\limit_search_result");
+	static final String startVideo = "";
+	static final String javbot3_cookie = "77bf74e057abc7156673d37aabd4f92e";
+	static final String load_file_date = "20251009";
+	static final File result_folder = new File("M:\\limit\\aaa\\limit_search_result");
 
 	@Test
 	public void autoFind_uncensored() throws Exception {
