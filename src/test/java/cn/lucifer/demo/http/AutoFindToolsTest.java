@@ -24,32 +24,33 @@ import java.util.*;
 public class AutoFindToolsTest {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	private static final String javbot3_cookie = "bfbd41e1e476c8e9df45632ecad6f4f9";
+	private static final int startPage = 1;
+	private static final String startVideo = "";
+	private static final String javbot3_cookie = "a0a362464d0136a01c5159856801c856";
 	private static final String load_file_date = "20251008";
+	private final File result_folder = new File("M:\\limit\\aaa\\limit_search_result");
 
 	@Test
 	public void autoFind_uncensored() throws Exception {
 		final String loadEndTime = "2025-10-06";
-		final String startVideo = "";
-		final File oldFile = new File("M:\\limit\\aaa\\limit_search_result\\error_20251006_220526.txt");
-		autoFind(CilimaoSearchTypeEnum.uncensored_HD, loadEndTime, startVideo, oldFile);
+		final File oldFile = new File(result_folder, "error_20251006_220526.txt");
+		autoFind(CilimaoSearchTypeEnum.uncensored_HD, loadEndTime, 2, oldFile);
 	}
 
 	@Test
 	public void autoFind_hdd600() throws Exception {
 		final String loadEndTime = "2021-10-20";
-		final String startVideo = "";
-		autoFind(CilimaoSearchTypeEnum.hdd600, loadEndTime, startVideo, null);
+		autoFind(CilimaoSearchTypeEnum.hdd600, loadEndTime, 25, null);
 	}
 
 
 	private void autoFind(CilimaoSearchTypeEnum searchTypeEnum, String loadEndTime,
-						  String startVideo, File oldFile) throws Exception {
+						  int maxPage, File oldFile) throws Exception {
 		final Map<String, String> limitGirlMap = loadFile("M:\\limit\\aaa\\limit_girl_{}.txt");
 		final Map<String, String> limitMp4Map = loadFile("M:\\limit\\aaa\\limit_mp4_{}.txt");
 
 		final List<String> outLineList = Lists.newArrayList();
-		if (null!= oldFile && oldFile.exists()) {
+		if (null != oldFile && oldFile.exists()) {
 			outLineList.addAll(FileUtils.readLines(oldFile, "utf-8"));
 			outLineList.add("\n\n\n\n\n\n");
 		}
@@ -66,7 +67,7 @@ public class AutoFindToolsTest {
 		boolean isFirst = StringUtils.isNotBlank(startVideo);
 
 		loopA:
-		for (int i = 1; i <= 25; i++) {
+		for (int i = startPage; i <= maxPage; i++) {
 			List<CilimaoLinkedInfo> linkedInfoList = cilimaoApp.getLinkedInfoList(i);
 			logger.info("page={}, linkedInfoList = {}", i, JSON.toJSONString(linkedInfoList));
 
@@ -86,7 +87,7 @@ public class AutoFindToolsTest {
 					continue;
 				}
 
-				List<JayBotItemInfo> videoInfoList = searchV2(jayBot, name, outLineList, i);
+				List<JayBotItemInfo> videoInfoList = searchV2(jayBot, name, outLineList, i, searchTypeEnum);
 
 				if (CollectionUtils.isEmpty(videoInfoList)) {
 					// 搜索不到结果
@@ -103,14 +104,21 @@ public class AutoFindToolsTest {
 				for (JayBotItemInfo videoInfo : videoInfoList) {
 					StrBuilder outLine = new StrBuilder();
 
+					if (limitMp4Map.containsKey(linkedInfo.name)) {
+						outLine.append("exists!!!").append('\t');
+					} else if (StringUtils.isNotEmpty(searchTypeEnum.getToMp4Suffix())) {
+						String mp4Name = name + searchTypeEnum.getToMp4Suffix();
+						if (limitMp4Map.containsKey(mp4Name)) {
+							outLine.append("exists!!!").append('\t');
+						}
+					}
+
 					String girlRating = limitGirlMap.get(videoInfo.actress);
 					// 评分
 					outLine.append(StringUtils.defaultString(girlRating, "unknowns")).append('\t');
 					outLine.append(videoInfo.actress).append('\t');
 					outLine.append(linkedInfo.name).append('\t');
-					if (limitMp4Map.containsKey(linkedInfo.name)) {
-						outLine.append("exists!!!").append('\t');
-					}
+
 					outLine.append(videoInfo.score).append('\t');
 					outLine.append(linkedInfo.url).append('\t');
 					outLine.append(linkedInfo.createTime).append('\t');
@@ -126,10 +134,10 @@ public class AutoFindToolsTest {
 		}
 
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
-		final String outFn = StrUtils.generateMessage("M:\\limit\\aaa\\limit_search_result\\limit_search_{}_result_{}.txt",
+		final String outFn = StrUtils.generateMessage("{}_result_{}.txt",
 				searchTypeEnum.name(), dateFormat.format(new Date()));
 
-		FileUtils.writeLines(new File(outFn), "utf-8", outLineList);
+		FileUtils.writeLines(new File(result_folder, outFn), "utf-8", outLineList);
 	}
 
 	private Map<String, String> loadFile(String loadFileTemplate) throws Exception {
@@ -149,7 +157,8 @@ public class AutoFindToolsTest {
 		return limitGirlMap;
 	}
 
-	private List<JayBotItemInfo> searchV2(JayBot jayBot, String name, List<String> outLineList, int page) throws Exception {
+	private List<JayBotItemInfo> searchV2(JayBot jayBot, String name, List<String> outLineList,
+										  int page, CilimaoSearchTypeEnum searchTypeEnum) throws Exception {
 		Exception ex = null;
 		for (int i = 0; i < 5; i++) {
 
@@ -157,11 +166,12 @@ public class AutoFindToolsTest {
 				return jayBot.searchV2(name);
 			} catch (Exception e) {
 				SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
-				final String outFn = StrUtils.generateMessage("M:\\limit\\aaa\\limit_search_result\\error_{}.txt", dateFormat.format(new Date()));
+				final String outFn = StrUtils.generateMessage("{}_error_{}.txt",
+						searchTypeEnum.name(), dateFormat.format(new Date()));
 				outLineList.add(StrUtils.generateMessage("last page={}", page));
-				FileUtils.writeLines(new File(outFn), "utf-8", outLineList);
+				FileUtils.writeLines(new File(result_folder, outFn), "utf-8", outLineList);
 
-				for (int j = 0; j < 30; j++) {
+				for (int j = 0; j < 20; j++) {
 					sleepRandom(true);
 				}
 
@@ -194,9 +204,14 @@ public class AutoFindToolsTest {
 
 	@Test
 	public void jayBot_searchV2() throws Exception {
-		final String keyword = "SONE-915AAA";
-		BasicCookieStore cookieStore = new BasicCookieStore();
-		JayBot jayBot = new JayBot(cookieStore);
+		final String keyword = "SONE-915";
+		BasicCookieStore jayBotCookieStore = new BasicCookieStore();
+		{
+			BasicClientCookie cookie = new BasicClientCookie("csrf_cookie", javbot3_cookie);
+			cookie.setDomain("javbot3.top");
+			jayBotCookieStore.addCookie(cookie);
+		}
+		JayBot jayBot = new JayBot(jayBotCookieStore);
 
 		List<JayBotItemInfo> infoList = jayBot.searchV2(keyword);
 		logger.info("infoList = {}", JSON.toJSONString(infoList));
