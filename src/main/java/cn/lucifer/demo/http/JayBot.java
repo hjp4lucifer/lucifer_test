@@ -28,6 +28,7 @@ public class JayBot {
 
 	private final BasicCookieStore cookieStore;
 
+	private String actorCode;
 
 	public JayBot(BasicCookieStore cookieStore) {
 		this.cookieStore = cookieStore;
@@ -51,6 +52,10 @@ public class JayBot {
 		String url = BASE_URL + URL_TEMPLATE + keyword;
 
 		Document doc = getDoc(url);
+		return parseDoc(doc);
+	}
+
+	protected List<JayBotItemInfo> parseDoc(Document doc){
 		Elements thumbnailList = doc.select(".thumbnail");
 
 		List<JayBotItemInfo> resultList = Lists.newArrayListWithExpectedSize(thumbnailList.size());
@@ -88,6 +93,14 @@ public class JayBot {
 			resultList.add(result);
 		}
 		return resultList;
+	}
+
+	public List<JayBotItemInfo> getByActor(String actorCode) throws IOException {
+		this.actorCode = actorCode;
+		String url = BASE_URL + "/actor/" + actorCode;
+
+		Document doc = getDoc(url);
+		return parseDoc(doc);
 	}
 
 	public JayBotItemInfo getDetail(String detailUrl) throws IOException {

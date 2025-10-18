@@ -149,22 +149,22 @@ public class LimitAutoFindTools {
 			String[] split = StringUtils.split(girl, '\t');
 			String key = split[0];
 			String value = split[1];
-			limitGirlMap.put(key, value);
+			putMap(limitGirlMap, key, value);
 
 			// 多名字识别
 			if (value.length() <= 3) {
 				// 确保value是等级，而不是子目录
 				if (key.endsWith("）") && key.contains("（")) {
 					String current = StringUtils.substringBefore(key, "（");
-					limitGirlMap.put(current, value);
+					putMap(limitGirlMap, current, value);
 
 					String special = StringUtils.substringBetween(key, "（", "）");
-					limitGirlMap.put(special, value);
+					putMap(limitGirlMap, special, value);
 
 					if (special.contains("、")) {
 						String[] specialArray = StringUtils.split(special, '、');
 						for (String specialName : specialArray) {
-							limitGirlMap.put(specialName, value);
+							putMap(limitGirlMap, specialName, value);
 						}
 					}
 				}
@@ -173,6 +173,14 @@ public class LimitAutoFindTools {
 		}
 
 		return limitGirlMap;
+	}
+
+	private void putMap(Map<String, String> limitGirlMap, String key, String value) {
+		if (limitGirlMap.containsKey(key)) {
+			logger.warn("girl={} 重复了!!! value={}", key, value);
+			return;
+		}
+		limitGirlMap.put(key, value);
 	}
 
 	private List<JayBotItemInfo> searchV2(JayBot jayBot, String name, List<String> outLineList,

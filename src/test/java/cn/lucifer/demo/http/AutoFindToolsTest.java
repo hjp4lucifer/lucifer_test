@@ -29,17 +29,17 @@ public class AutoFindToolsTest {
 	 * 如：JUR-417
 	 */
 	static final String startVideo = "";
-	static final String javbot3_cookie = "77bf74e057abc7156673d37aabd4f92e";
-	static final String load_file_date = "20251009";
+	static final String javbot3_cookie = "f6894598d3055cbe668228a833e6dde6";
+	static final String load_file_date = "20251018";
 	static final File result_folder = new File("M:\\limit\\aaa\\limit_search_result");
 
 	@Test
 	public void autoFind_uncensored() throws Exception {
-		final String loadEndTime = "2025-10-06";
+		final String loadEndTime = "2025-10-15";
 		final File oldFile = new File(result_folder, "uncensored_HD_error_20251008_183940.txt");
 
 		LimitAutoFindTools tools = new LimitAutoFindTools(startPage, startVideo, javbot3_cookie, load_file_date, result_folder);
-		tools.autoFind(CilimaoSearchTypeEnum.uncensored_HD, loadEndTime, 3, oldFile);
+		tools.autoFind(CilimaoSearchTypeEnum.uncensored_HD, loadEndTime, 30, oldFile);
 	}
 
 	@Test
