@@ -15,6 +15,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -27,7 +28,6 @@ import org.apache.commons.logging.LogFactory;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
-import sun.misc.BASE64Decoder;
 
 /**
  * 私密圈加/解密
@@ -173,8 +173,8 @@ public class RSAEncrypt {
 	 */
 	private static void loadPublicKey(String publicKeyStr) throws Exception {
 		try {
-			BASE64Decoder base64Decoder = new BASE64Decoder();
-			byte[] buffer = base64Decoder.decodeBuffer(publicKeyStr);
+			Base64.Decoder base64Decoder =  Base64.getDecoder();
+			byte[] buffer = base64Decoder.decode(publicKeyStr);
 			KeyFactory keyFactory = KeyFactory.getInstance("RSA");
 			X509EncodedKeySpec keySpec = new X509EncodedKeySpec(buffer);
 			publicKey = (RSAPublicKey) keyFactory.generatePublic(keySpec);
@@ -183,8 +183,6 @@ public class RSAEncrypt {
 		} catch (InvalidKeySpecException e) {
 			e.printStackTrace();
 			throw new Exception("公钥非法");
-		} catch (IOException e) {
-			throw new Exception("公钥数据内容读取错误");
 		} catch (NullPointerException e) {
 			throw new Exception("公钥数据为空");
 		}
@@ -193,8 +191,6 @@ public class RSAEncrypt {
 	/**
 	 * 从文件中加载私钥
 	 * 
-	 * @param keyFileName
-	 *            私钥文件名
 	 * @return 是否成功
 	 * @throws Exception
 	 */
@@ -221,8 +217,8 @@ public class RSAEncrypt {
 
 	private static void loadPrivateKey(String privateKeyStr) throws Exception {
 		try {
-			BASE64Decoder base64Decoder = new BASE64Decoder();
-			byte[] buffer = base64Decoder.decodeBuffer(privateKeyStr);
+			Base64.Decoder base64Decoder =  Base64.getDecoder();
+			byte[] buffer = base64Decoder.decode(privateKeyStr);
 			PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(buffer);
 			KeyFactory keyFactory = KeyFactory.getInstance("RSA");
 			privateKey = (RSAPrivateKey) keyFactory.generatePrivate(keySpec);
@@ -231,8 +227,6 @@ public class RSAEncrypt {
 		} catch (InvalidKeySpecException e) {
 			e.printStackTrace();
 			throw new Exception("私钥非法");
-		} catch (IOException e) {
-			throw new Exception("私钥数据内容读取错误");
 		} catch (NullPointerException e) {
 			throw new Exception("私钥数据为空");
 		}

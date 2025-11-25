@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
 public class CilimaoApp {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	private static final String BASE_URL = "https://clm50.top/";
+	private static final String BASE_URL = "https://clm52.top/";
 	private final String url_template;
 
 	// 定义正则表达式
