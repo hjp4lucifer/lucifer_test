@@ -29,13 +29,13 @@ public class AutoFindToolsTest {
 	 * 如：JUR-417
 	 */
 	static final String startVideo = "";
-	static final String javbot3_cookie = "ee6bce4875f5c909bc3bb799f6fedd02";
-	static final String load_file_date = "20251120";
+	static final String javbot3_cookie = "36f4a1c5bd27f4415f2b0772f2c77c20";
+	static final String load_file_date = "20251213";
 	static final File result_folder = new File("M:\\limit\\aaa\\limit_search_result");
 
 	@Test
 	public void autoFind_uncensored() throws Exception {
-		final String loadEndTime = "2025-11-10";
+		final String loadEndTime = "2025-12-10";
 		final File oldFile = new File(result_folder, "uncensored_HD_error_20251025_150645.txt");
 
 		LimitAutoFindTools tools = new LimitAutoFindTools(startPage, startVideo, javbot3_cookie, load_file_date, result_folder);

@@ -90,10 +90,16 @@ public class CilimaoApp {
 	private Document getDoc(String url) throws IOException, HttpClientException {
 		byte[] resp = HttpClient5Helper.httpGet(url, null, null, cookieStore);
 		String str = new String(resp);
-		String[] strList = StringUtils.substringsBetween(str, "window.atob(\"", "\")");
+		String respStr;
+		if (str.contains("window.atob(")) {
+			String[] strList = StringUtils.substringsBetween(str, "window.atob(\"", "\")");
+			resp = Base64.decodeBase64(strList[0]);
+			respStr = URIUtil.decode(new String(resp));
+		} else {
+			respStr = new String(resp);
+		}
 
-		resp = Base64.decodeBase64(strList[0]);
-		return Jsoup.parse(URIUtil.decode(new String(resp)));
+		return Jsoup.parse(respStr);
 	}
 
 
