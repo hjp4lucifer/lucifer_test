@@ -45,7 +45,7 @@ public class LimitAutoFindTools {
 		this.startVideo = startVideo;
 		BasicCookieStore cookieStore = CookiesUtils.getCookieStore("javbot3.top", javbot3Cookie);
 		String javbot3CookieToken = CookiesUtils.getByName(cookieStore, "csrf_cookie");
-		if(null == javbot3CookieToken){
+		if (null == javbot3CookieToken) {
 			throw new IllegalArgumentException("javbot3_cookie_token is null");
 		}
 		this.jayBotCookieStore = cookieStore;
@@ -53,7 +53,6 @@ public class LimitAutoFindTools {
 		this.loadFileDate = loadFileDate;
 		this.resultFolder = resultFolder;
 	}
-
 
 
 	public void autoFind(CilimaoSearchTypeEnum searchTypeEnum, String loadEndTime,
@@ -220,6 +219,10 @@ public class LimitAutoFindTools {
 
 			for (int i = 1; i <= maxPage; i++) {
 				List<CilimaoLinkedInfo> linkedInfoList = cilimaoApp.getLinkedInfoList(urlTemplate, i);
+				if (linkedInfoList.isEmpty()) {
+					logger.info("page={}, linkedInfoList is empty", i);
+					break;
+				}
 				logger.info("page={}, linkedInfoList = {}", i, JSON.toJSONString(linkedInfoList));
 
 				for (CilimaoLinkedInfo linkedInfo : linkedInfoList) {

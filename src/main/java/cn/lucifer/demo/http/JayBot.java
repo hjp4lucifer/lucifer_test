@@ -118,13 +118,17 @@ public class JayBot {
 			Document doc = getDoc(url);
 			result.items = parseDoc(doc);
 
-			result.actorName = doc.select(".panel-title").get(0).text();
+			result.actorName = doc.select(".panel-title").get(0).childNode(0).toString();
 
 			result.nextPage = 1;
 		} else {
 			NameValuePair[] parametersBody = {new NameValuePair("stb_csrf_token", cookieToken), new NameValuePair("page", String.valueOf(page))};
 
-			byte[] resp = HttpClient5Helper.httpPost(url, parametersBody, null, cookieStore);
+			Map<String, String> header = new HashMap<>();
+			header.put("referer", url);
+			header.put("x-requested-with", "XMLHttpRequest");
+
+			byte[] resp = HttpClient5Helper.httpPost(url, parametersBody, header, cookieStore);
 			String str = new String(resp);
 			JSONObject jsonObject = JSON.parseObject(str);
 			Document doc = Jsoup.parse(jsonObject.getString("html"));

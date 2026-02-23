@@ -8,6 +8,7 @@ import cn.lucifer.util.StrUtils;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.cookie.BasicCookieStore;
@@ -34,17 +35,19 @@ public class CilimaoApp {
 	private final String url_template;
 
 	// 定义正则表达式
-	private final String regex;
+	private String regex;
 
 	// 编译Pattern对象
-	private final Pattern pattern;
+	private Pattern pattern;
 
 	private final BasicCookieStore cookieStore;
 
 	public CilimaoApp(CilimaoSearchTypeEnum searchType, BasicCookieStore cookieStore) {
 		this.cookieStore = cookieStore;
-		this.regex = searchType.getRegex();
-		this.pattern = Pattern.compile(regex);
+		if (StringUtils.isNotEmpty(searchType.getRegex())) {
+			this.regex = searchType.getRegex();
+			this.pattern = Pattern.compile(regex);
+		}
 		this.url_template = StrUtils.generateMessage("search?word={}&sort=time&p=", searchType.getKeyword());
 	}
 
@@ -58,6 +61,9 @@ public class CilimaoApp {
 
 		Document doc = getDoc(urlStr);
 		Elements search_list_wrapper = doc.select("#Search_list_wrapper");
+		if (CollectionUtils.isEmpty(search_list_wrapper)) {
+			return Lists.newArrayList();
+		}
 		Elements liArray = search_list_wrapper.get(0).children();
 
 		List<CilimaoLinkedInfo> resultList = Lists.newArrayListWithExpectedSize(liArray.size());
@@ -77,12 +83,14 @@ public class CilimaoApp {
 
 			logger.info("infoDto={}", JSON.toJSONString(r));
 
-
-			// 创建Matcher对象
-			Matcher matcher = pattern.matcher(r.name);
-			if (!matcher.matches()) {
-				logger.warn("不符合定义的文件格式! fileName={}", r.name);
-				continue;
+			// 非空则认为需要校验
+			if (null != pattern) {
+				// 创建Matcher对象
+				Matcher matcher = pattern.matcher(r.name);
+				if (!matcher.matches()) {
+					logger.warn("不符合定义的文件格式! fileName={}", r.name);
+					continue;
+				}
 			}
 
 			resultList.add(r);
