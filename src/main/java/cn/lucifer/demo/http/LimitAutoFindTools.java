@@ -4,6 +4,7 @@ import cn.lucifer.demo.http.dict.CilimaoSearchTypeEnum;
 import cn.lucifer.demo.http.domain.CilimaoLinkedInfo;
 import cn.lucifer.demo.http.domain.JayBotActorPageResult;
 import cn.lucifer.demo.http.domain.JayBotItemInfo;
+import cn.lucifer.http.HttpClientException;
 import cn.lucifer.util.CookiesUtils;
 import cn.lucifer.util.StrUtils;
 import com.alibaba.fastjson.JSON;
@@ -20,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -173,6 +175,8 @@ public class LimitAutoFindTools {
 		outLineList.add("h3 span{padding:0px 8px}");
 		outLineList.add("li {padding:3px}");
 		outLineList.add("li span{padding:0px 5px}");
+		outLineList.add(".red_b{color:red;font-weight:bolder;}");
+		outLineList.add(".blue_b{color:blue;font-weight:bolder;}");
 		outLineList.add("</style>");
 
 		JayBot jayBot = new JayBot(jayBotCookieStore);
@@ -213,6 +217,8 @@ public class LimitAutoFindTools {
 		CilimaoSearchTypeEnum searchTypeEnum = CilimaoSearchTypeEnum.base64;
 		CilimaoApp cilimaoApp = new CilimaoApp(searchTypeEnum, new BasicCookieStore());
 
+		final List<String> buleSuffixList = Lists.newArrayList("-UC", CilimaoSearchTypeEnum.uncensored_HD.getSuffix());
+
 		for (JayBotItemInfo videoInfo : videoList) {
 			// 写入视频基本信息
 			{
@@ -224,7 +230,7 @@ public class LimitAutoFindTools {
 				outLine.append(StrUtils.generateMessage("<span>{}</span>", videoInfo.name));
 
 				String str = outLine.toString();
-				logger.info("video={}", str);
+				logger.info("video={}", JSON.toJSONString(videoInfo));
 				outLineList.add(StrUtils.generateMessage("<h3>{}</h3>", str));
 			}
 
@@ -235,7 +241,20 @@ public class LimitAutoFindTools {
 			String urlTemplate = StrUtils.generateMessage("search?word={}&sort=time&p=", keyword);
 
 			for (int i = 1; i <= maxPage; i++) {
-				List<CilimaoLinkedInfo> linkedInfoList = cilimaoApp.getLinkedInfoList(urlTemplate, i);
+				List<CilimaoLinkedInfo> linkedInfoList = null;
+				for (int retry = 0; retry < 3; retry++) {
+					try {
+						linkedInfoList = cilimaoApp.getLinkedInfoList(urlTemplate, i);
+						break;
+					} catch (Exception e) {
+						if (retry < 2) {
+							logger.error("retry={}", retry, e);
+							sleepRandom(true);
+							continue;
+						}
+						outLineList.add(StrUtils.generateMessage("<li class=\"red_b\">page={} is error</li>", i));
+					}
+				}
 				if (linkedInfoList.isEmpty()) {
 					logger.info("page={}, linkedInfoList is empty", i);
 					break;
@@ -245,17 +264,35 @@ public class LimitAutoFindTools {
 				for (CilimaoLinkedInfo linkedInfo : linkedInfoList) {
 					StrBuilder outLine = new StrBuilder();
 
-					if (limitMp4Map.containsKey(linkedInfo.name)) {
-						outLine.append(StrUtils.generateMessage("<span style=\"color:red\">{}</span>", "exists!!!"));
+					boolean exists = false;
+					String linkedTitle = linkedInfo.name;
+					if (limitMp4Map.containsKey(linkedTitle)) {
+						exists = true;
+					} else if (linkedTitle.endsWith(CilimaoSearchTypeEnum.uncensored_HD.getSuffix())) {
+						String mp4Name = StringUtils.removeEnd(linkedTitle, CilimaoSearchTypeEnum.uncensored_HD.getSuffix());
+						mp4Name += CilimaoSearchTypeEnum.uncensored_HD.getToMp4Suffix();
+						exists = limitMp4Map.containsKey(mp4Name);
+					} else if (StringUtils.isNotEmpty(searchTypeEnum.getToMp4Suffix())) {
+						String mp4Name = linkedTitle + searchTypeEnum.getToMp4Suffix();
+						exists = limitMp4Map.containsKey(mp4Name);
 					}
-					outLine.append(StrUtils.generateMessage("<span>{}</span>", linkedInfo.name));
+					if (exists) {
+						outLine.append(StrUtils.generateMessage("<span class=\"red_b\">{}</span>", "exists!!!"));
+					}
+
+					boolean blueTitle = buleSuffixList.stream().anyMatch(linkedTitle::endsWith);
+					if (blueTitle) {
+						outLine.append(StrUtils.generateMessage("<span class=\"blue_b\">{}</span>", linkedTitle));
+					} else {
+						outLine.append(StrUtils.generateMessage("<span>{}</span>", linkedTitle));
+					}
 					outLine.append(StrUtils.generateMessage("<span>{}</span>", linkedInfo.fileSize));
 					outLine.append(StrUtils.generateMessage("<span>{}</span>", linkedInfo.createTime));
 
 					outLine.append(StrUtils.generateMessage("<a href=\"{}\" target=\"_black\">{}</a>", linkedInfo.url, linkedInfo.url));
 
 					String str = outLine.toString();
-					logger.info("linked={}", str);
+					logger.info("linkedInfo={}", JSON.toJSONString(linkedInfo));
 					outLineList.add(StrUtils.generateMessage("<li>{}</li>", str));
 
 				}
