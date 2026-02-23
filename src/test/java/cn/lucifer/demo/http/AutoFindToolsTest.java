@@ -3,8 +3,10 @@ package cn.lucifer.demo.http;
 import cn.lucifer.demo.http.dict.CilimaoSearchTypeEnum;
 import cn.lucifer.demo.http.domain.CilimaoLinkedInfo;
 import cn.lucifer.demo.http.domain.JayBotItemInfo;
+import cn.lucifer.util.CookiesUtils;
 import com.alibaba.fastjson.JSON;
 import org.apache.hc.client5.http.cookie.BasicCookieStore;
+import org.apache.hc.client5.http.cookie.Cookie;
 import org.apache.hc.client5.http.impl.cookie.BasicClientCookie;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -12,6 +14,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.*;
+
+import static org.junit.Assert.assertNotNull;
 
 public class AutoFindToolsTest {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -21,7 +25,7 @@ public class AutoFindToolsTest {
 	 * 如：JUR-417
 	 */
 	static final String startVideo = "";
-	static final String javbot3_cookie_token = "017da5f8d853c670c115c4932c600bb2";
+	static final String javbot3_cookie = "server_name_session=8be949241b0363e6537e06e054d75dc4; 3ad6828500a26363477e2631874c27d6=2ca6739393d962434f246fbc63f6a12d; csrf_cookie=f81984cef14c6134a72d4111dd6e8f46; cqse=BmQBagVmAWxadwAmUWwJO1BgBjwEIQ16UTZUJgF0UD8Ha1xvAlNUPQdgBXZVOFB0UDwDZQQxVWwFJw5sBmNQZlVlATNQMgc1ADUGbVU5U2IGPAFpBWMBYFo6ADZRYAlrUGUGNQQwDWxRNlQwATdQZgcwXDUCOlRgB2AFdlU4UHRQPANnBDNVbAUnDmcGcVALVTYBZFAyB3MAZgYoVShTcQY+ASMFaQFnWj8Ab1F0CT5QZQYoBDINPFFiVHsBNlBlBzZcLwI4VGAHJgVvVXBQPVA3A2YEOVV0BXAOfQZkUCZVCAFhUDEHZABtBi9VeVNoBnYBagViAWdaOQBvUXQJR1A/BnwEag1lUT9UNAEoUGMHKlwxAixUfAdTBT1VbVBjUGkDIQRwVXYFSw5aBiFQZVVnAS5QZgc6ACMGDFUyUz0GMwFkBWgBdlp0AGNRYgkjUHAGRwRzDXlRP1QwAVBQMwdmXEoCZVQgBysFYVUwUDBQKANlBDVVdgUtDkUGSVAAVRoBTFB6ByEAbwYyVTBTNgYlARcFNgE1WmcAOlF/CSpQEwZuBHENZlE+VDABKFBvBzZcLwI8VHoHMAVhVTJQMlAoA2cEM1VhBSUOXQZgUDJVNgFyUD8HLgA2BmhVbFN9BjYBZgVxAW1afwBvUWcJOVBqBiQEbw1oUSBUIQFYUDcHZ1x1AmVUIgdtBSBVelAlUD0DPwQ5VWcFMg45BjBQbFVkATNQZAc4ADAGYFUoU2kGPAFqBXEBI1p/ADBRJAlVUDQGZwR3DWhRcVRuAXRQbAc0XDsCLlR2Bz8FKQ==; _clck=1y8yodb^2^g3t^0^2245; _clsk=1657jwc^1771833296758^1^1^a.clarity.ms/collect";
 	static final String load_file_date = "20260223";
 	static final File result_folder = new File("M:\\limit\\aaa\\limit_search_result");
 
@@ -30,20 +34,20 @@ public class AutoFindToolsTest {
 		final String loadEndTime = "2026-01-15";
 		final File oldFile = new File(result_folder, "uncensored_HD_error_20251025_150645.txt");
 
-		LimitAutoFindTools tools = new LimitAutoFindTools(startPage, startVideo, javbot3_cookie_token, load_file_date, result_folder);
+		LimitAutoFindTools tools = new LimitAutoFindTools(startPage, startVideo, javbot3_cookie, load_file_date, result_folder);
 		tools.autoFind(CilimaoSearchTypeEnum.uncensored_HD, loadEndTime, 84, oldFile);
 	}
 
 	@Test
 	public void autoFind_findByAuthor() throws Exception {
-		LimitAutoFindTools tools = new LimitAutoFindTools(startPage, startVideo, javbot3_cookie_token, load_file_date, result_folder);
+		LimitAutoFindTools tools = new LimitAutoFindTools(startPage, startVideo, javbot3_cookie, load_file_date, result_folder);
 		tools.autoFindByAuthor("qvRpm", 100);
 	}
 
 	@Test
 	public void autoFind_hdd600() throws Exception {
 		final String loadEndTime = "2021-10-20";
-		LimitAutoFindTools tools = new LimitAutoFindTools(startPage, startVideo, javbot3_cookie_token, load_file_date, result_folder);
+		LimitAutoFindTools tools = new LimitAutoFindTools(startPage, startVideo, javbot3_cookie, load_file_date, result_folder);
 		tools.autoFind(CilimaoSearchTypeEnum.hdd600, loadEndTime, 25, null);
 	}
 
@@ -63,7 +67,7 @@ public class AutoFindToolsTest {
 	public void jayBot_search() throws Exception {
 		final String keyword = "SONE-915";
 		BasicCookieStore cookieStore = new BasicCookieStore();
-		JayBot jayBot = new JayBot(cookieStore, javbot3_cookie_token);
+		JayBot jayBot = new JayBot(CookiesUtils.getCookieStore("javbot3.top", javbot3_cookie));
 
 		List<String> urlList = jayBot.search(keyword);
 		logger.info("urlList = {}", JSON.toJSONString(urlList));
@@ -72,13 +76,7 @@ public class AutoFindToolsTest {
 	@Test
 	public void jayBot_searchV2() throws Exception {
 		final String keyword = "SONE-915";
-		BasicCookieStore jayBotCookieStore = new BasicCookieStore();
-		{
-			BasicClientCookie cookie = new BasicClientCookie("csrf_cookie", javbot3_cookie_token);
-			cookie.setDomain("javbot3.top");
-			jayBotCookieStore.addCookie(cookie);
-		}
-		JayBot jayBot = new JayBot(jayBotCookieStore, javbot3_cookie_token);
+		JayBot jayBot = new JayBot(CookiesUtils.getCookieStore("javbot3.top", javbot3_cookie));
 
 		List<JayBotItemInfo> infoList = jayBot.searchV2(keyword);
 		logger.info("infoList = {}", JSON.toJSONString(infoList));
@@ -87,7 +85,7 @@ public class AutoFindToolsTest {
 	@Test
 	public void jayBot_detail() throws Exception {
 		BasicCookieStore cookieStore = new BasicCookieStore();
-			JayBot jayBot = new JayBot(cookieStore, javbot3_cookie_token);
+		JayBot jayBot = new JayBot(CookiesUtils.getCookieStore("javbot3.top", javbot3_cookie));
 
 		String url = "/item/ZxYjn";
 		JayBotItemInfo info = jayBot.getDetail(url);

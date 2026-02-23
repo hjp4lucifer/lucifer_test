@@ -4,6 +4,7 @@ import cn.lucifer.demo.http.domain.JayBotActorPageResult;
 import cn.lucifer.demo.http.domain.JayBotItemInfo;
 import cn.lucifer.http.HttpClientException;
 import cn.lucifer.http.NameValuePair;
+import cn.lucifer.util.CookiesUtils;
 import cn.lucifer.util.HttpClient5Helper;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -36,9 +37,13 @@ public class JayBot {
 
 	private String actorCode;
 
-	public JayBot(BasicCookieStore cookieStore, String cookieToken) {
+	public JayBot(BasicCookieStore cookieStore) {
 		this.cookieStore = cookieStore;
-		this.cookieToken = cookieToken;
+		String javbot3CookieToken = CookiesUtils.getByName(cookieStore, "csrf_cookie");
+		if(null == javbot3CookieToken){
+			throw new IllegalArgumentException("javbot3_cookie_token is null");
+		}
+		this.cookieToken = javbot3CookieToken;
 	}
 
 	public List<String> search(String keyword) throws IOException, HttpClientException {

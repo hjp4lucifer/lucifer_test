@@ -4,6 +4,7 @@ import cn.lucifer.demo.http.dict.CilimaoSearchTypeEnum;
 import cn.lucifer.demo.http.domain.CilimaoLinkedInfo;
 import cn.lucifer.demo.http.domain.JayBotActorPageResult;
 import cn.lucifer.demo.http.domain.JayBotItemInfo;
+import cn.lucifer.util.CookiesUtils;
 import cn.lucifer.util.StrUtils;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
@@ -13,6 +14,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.text.StrBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.cookie.BasicCookieStore;
+import org.apache.hc.client5.http.cookie.Cookie;
 import org.apache.hc.client5.http.impl.cookie.BasicClientCookie;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,20 +40,21 @@ public class LimitAutoFindTools {
 	private final File resultFolder;
 	private final BasicCookieStore jayBotCookieStore;
 
-	public LimitAutoFindTools(int startPage, String startVideo, String javbot3CookieToken, String loadFileDate, File resultFolder) {
+	public LimitAutoFindTools(int startPage, String startVideo, String javbot3Cookie, String loadFileDate, File resultFolder) {
 		this.startPage = startPage;
 		this.startVideo = startVideo;
-		this.javbot3CookieToken = javbot3CookieToken;
-		BasicCookieStore jayBotCookieStore = new BasicCookieStore();
-		{
-			BasicClientCookie cookie = new BasicClientCookie("csrf_cookie", javbot3CookieToken);
-			cookie.setDomain("javbot3.top");
-			jayBotCookieStore.addCookie(cookie);
+		BasicCookieStore cookieStore = CookiesUtils.getCookieStore("javbot3.top", javbot3Cookie);
+		String javbot3CookieToken = CookiesUtils.getByName(cookieStore, "csrf_cookie");
+		if(null == javbot3CookieToken){
+			throw new IllegalArgumentException("javbot3_cookie_token is null");
 		}
-		this.jayBotCookieStore = jayBotCookieStore;
+		this.jayBotCookieStore = cookieStore;
+		this.javbot3CookieToken = javbot3CookieToken;
 		this.loadFileDate = loadFileDate;
 		this.resultFolder = resultFolder;
 	}
+
+
 
 	public void autoFind(CilimaoSearchTypeEnum searchTypeEnum, String loadEndTime,
 						 int maxPage, File oldFile) throws Exception {
@@ -74,7 +77,7 @@ public class LimitAutoFindTools {
 
 		CilimaoApp cilimaoApp = new CilimaoApp(searchTypeEnum, new BasicCookieStore());
 
-		JayBot jayBot = new JayBot(jayBotCookieStore, javbot3CookieToken);
+		JayBot jayBot = new JayBot(jayBotCookieStore);
 		boolean isFirst = StringUtils.isNotBlank(startVideo);
 
 		loopA:
@@ -165,7 +168,7 @@ public class LimitAutoFindTools {
 
 		final List<String> outLineList = Lists.newArrayList();
 
-		JayBot jayBot = new JayBot(jayBotCookieStore, javbot3CookieToken);
+		JayBot jayBot = new JayBot(jayBotCookieStore);
 		String actorName = StringUtils.EMPTY;
 
 		// 手动控制分页
