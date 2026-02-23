@@ -26,6 +26,8 @@ public class LimitAutoFindTools {
 
 	private static final Logger logger = LoggerFactory.getLogger(LimitAutoFindTools.class);
 
+	final File folder = new File("M:\\limit\\aaa");
+
 	private final int startPage;
 	private final String startVideo;
 	private final String javbot3Cookie;
@@ -42,8 +44,16 @@ public class LimitAutoFindTools {
 
 	public void autoFind(CilimaoSearchTypeEnum searchTypeEnum, String loadEndTime,
 						 int maxPage, File oldFile) throws Exception {
-		final Map<String, String> limitGirlMap = loadFile("M:\\limit\\aaa\\limit_girl_{}.txt");
-		final Map<String, String> limitMp4Map = loadFile("M:\\limit\\aaa\\limit_mp4_{}.txt");
+		final Map<String, String> limitGirlMap = loadFile("limit_girl_{}.txt");
+		final Map<String, String> limitMp4Map = loadFile("limit_mp4_{}.txt");
+
+		File[] mp4FileArray = folder.listFiles(f -> f.getName().endsWith(".mp4"));
+		if (null != mp4FileArray) {
+			for (File mp4File : mp4FileArray) {
+				String name = mp4File.getName();
+				limitMp4Map.put(name, "unknowns");
+			}
+		}
 
 		final List<String> outLineList = Lists.newArrayList();
 		if (null != oldFile && oldFile.exists()) {
@@ -138,7 +148,7 @@ public class LimitAutoFindTools {
 
 	protected Map<String, String> loadFile(String loadFileTemplate) throws Exception {
 		String fileName = StrUtils.generateMessage(loadFileTemplate, loadFileDate);
-		final File loadFile = new File(fileName);
+		final File loadFile = new File(folder, fileName);
 		if (!loadFile.exists()) {
 			throw new RuntimeException("loadFile not exists");
 		}
