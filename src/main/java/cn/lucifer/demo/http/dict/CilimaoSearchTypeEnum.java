@@ -2,6 +2,7 @@ package cn.lucifer.demo.http.dict;
 
 public enum CilimaoSearchTypeEnum {
 
+	base64("", "", "", ""),
 	uncensored_HD("", "-uncensored-HD", "[\\d\\w]+-\\d+", "dW5jZW5zb3JlZC1IRA", "-uncensored-nyap2p.com.mp4"),
 	hdd600("hdd600.com@", "_UNCENSORED_LEAKED_NOWATERMARK.mp4", "[\\d\\w]+-\\d+", "aGRkLTYwMA"),
 	;

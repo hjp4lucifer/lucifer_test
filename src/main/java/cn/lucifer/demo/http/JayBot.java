@@ -2,7 +2,10 @@ package cn.lucifer.demo.http;
 
 import cn.lucifer.demo.http.domain.JayBotItemInfo;
 import cn.lucifer.http.HttpClientException;
+import cn.lucifer.http.NameValuePair;
 import cn.lucifer.util.HttpClient5Helper;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.util.URIUtil;
@@ -28,10 +31,13 @@ public class JayBot {
 
 	private final BasicCookieStore cookieStore;
 
+	private final String cookieToken;
+
 	private String actorCode;
 
-	public JayBot(BasicCookieStore cookieStore) {
+	public JayBot(BasicCookieStore cookieStore, String cookieToken) {
 		this.cookieStore = cookieStore;
+		this.cookieToken = cookieToken;
 	}
 
 	public List<String> search(String keyword) throws IOException, HttpClientException {
@@ -55,7 +61,7 @@ public class JayBot {
 		return parseDoc(doc);
 	}
 
-	protected List<JayBotItemInfo> parseDoc(Document doc){
+	protected List<JayBotItemInfo> parseDoc(Document doc) {
 		Elements thumbnailList = doc.select(".thumbnail");
 
 		List<JayBotItemInfo> resultList = Lists.newArrayListWithExpectedSize(thumbnailList.size());
@@ -95,13 +101,33 @@ public class JayBot {
 		return resultList;
 	}
 
-	public List<JayBotItemInfo> getByActor(String actorCode) throws IOException {
+	public List<JayBotItemInfo> getByActor(String actorCode, int maxPage) throws IOException {
 		this.actorCode = actorCode;
-		String url = BASE_URL + "/actor/" + actorCode;
+		String url = BASE_URL + "/actor/" + actorCode + "?t=exr";
 
-		Document doc = getDoc(url);
-		return parseDoc(doc);
+		List<JayBotItemInfo> resultList = Lists.newArrayList();
+
+		for (int page = 1; page < maxPage; page++) {
+			if (page <= 1) {
+				Document doc = getDoc(url);
+				resultList.addAll(parseDoc(doc));
+			} else {
+				NameValuePair[] parametersBody = {new NameValuePair("stb_csrf_token", cookieToken), new NameValuePair("page", String.valueOf(page))};
+
+				byte[] resp = HttpClient5Helper.httpPost(url, parametersBody, null, cookieStore);
+				String str = new String(resp);
+				JSONObject jsonObject = JSON.parseObject(str);
+				Document doc = Jsoup.parse(jsonObject.getString("html"));
+				resultList.addAll(parseDoc(doc));
+				if (jsonObject.getInteger("nextPage") <= 0) {
+					break;
+				}
+			}
+		}
+
+		return resultList;
 	}
+
 
 	public JayBotItemInfo getDetail(String detailUrl) throws IOException {
 		String url = BASE_URL + detailUrl;

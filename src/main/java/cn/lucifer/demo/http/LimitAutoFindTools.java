@@ -17,7 +17,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -30,14 +32,22 @@ public class LimitAutoFindTools {
 
 	private final int startPage;
 	private final String startVideo;
-	private final String javbot3Cookie;
+	private final String javbot3CookieToken;
 	private final String loadFileDate;
 	private final File resultFolder;
+	private final BasicCookieStore jayBotCookieStore;
 
-	public LimitAutoFindTools(int startPage, String startVideo, String javbot3Cookie, String loadFileDate, File resultFolder) {
+	public LimitAutoFindTools(int startPage, String startVideo, String javbot3CookieToken, String loadFileDate, File resultFolder) {
 		this.startPage = startPage;
 		this.startVideo = startVideo;
-		this.javbot3Cookie = javbot3Cookie;
+		this.javbot3CookieToken = javbot3CookieToken;
+		BasicCookieStore jayBotCookieStore = new BasicCookieStore();
+		{
+			BasicClientCookie cookie = new BasicClientCookie("csrf_cookie", javbot3CookieToken);
+			cookie.setDomain("javbot3.top");
+			jayBotCookieStore.addCookie(cookie);
+		}
+		this.jayBotCookieStore = jayBotCookieStore;
 		this.loadFileDate = loadFileDate;
 		this.resultFolder = resultFolder;
 	}
@@ -62,14 +72,8 @@ public class LimitAutoFindTools {
 		}
 
 		CilimaoApp cilimaoApp = new CilimaoApp(searchTypeEnum, new BasicCookieStore());
-		BasicCookieStore jayBotCookieStore = new BasicCookieStore();
-		{
-			BasicClientCookie cookie = new BasicClientCookie("csrf_cookie", javbot3Cookie);
-			cookie.setDomain("javbot3.top");
-			jayBotCookieStore.addCookie(cookie);
-		}
 
-		JayBot jayBot = new JayBot(jayBotCookieStore);
+		JayBot jayBot = new JayBot(jayBotCookieStore, javbot3CookieToken);
 		boolean isFirst = StringUtils.isNotBlank(startVideo);
 
 		loopA:
@@ -135,6 +139,78 @@ public class LimitAutoFindTools {
 					outLineList.add(str);
 
 					sleepRandom(false);
+				}
+			}
+		}
+
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
+		final String outFn = StrUtils.generateMessage("{}_result_{}.txt",
+				searchTypeEnum.name(), dateFormat.format(new Date()));
+
+		FileUtils.writeLines(new File(resultFolder, outFn), "utf-8", outLineList);
+	}
+
+	public void autoFindByAuthor(String actorCode,
+								 int maxPage) throws Exception {
+		final Map<String, String> limitGirlMap = loadFile("limit_girl_{}.txt");
+		final Map<String, String> limitMp4Map = loadFile("limit_mp4_{}.txt");
+
+		File[] mp4FileArray = folder.listFiles(f -> f.getName().endsWith(".mp4"));
+		if (null != mp4FileArray) {
+			for (File mp4File : mp4FileArray) {
+				String name = mp4File.getName();
+				limitMp4Map.put(name, "unknowns");
+			}
+		}
+
+		final List<String> outLineList = Lists.newArrayList();
+
+
+		JayBot jayBot = new JayBot(jayBotCookieStore, javbot3CookieToken);
+		List<JayBotItemInfo> videoList = jayBot.getByActor(actorCode, maxPage);
+		logger.info("videoList = {}", JSON.toJSONString(videoList));
+
+		CilimaoSearchTypeEnum searchTypeEnum = CilimaoSearchTypeEnum.base64;
+		CilimaoApp cilimaoApp = new CilimaoApp(searchTypeEnum, new BasicCookieStore());
+
+
+		for (JayBotItemInfo videoInfo : videoList) {
+			// 写入视频基本信息
+			{
+				StrBuilder outLine = new StrBuilder();
+
+				outLine.append(videoInfo.videoNum).append('\t');
+				outLine.append(videoInfo.createTime).append('\t');
+				outLine.append(videoInfo.score).append('\t');
+				outLine.append(videoInfo.name);
+
+				String str = outLine.toString();
+				logger.info("video={}", str);
+				outLineList.add(str);
+			}
+
+			String keyword = StringUtils.stripEnd(Base64.getEncoder().encodeToString(videoInfo.videoNum.getBytes(StandardCharsets.UTF_8)), "=");
+			String urlTemplate = StrUtils.generateMessage("search?word={}&sort=time&p=", keyword);
+
+			for (int i = 1; i <= maxPage; i++) {
+				List<CilimaoLinkedInfo> linkedInfoList = cilimaoApp.getLinkedInfoList(urlTemplate, i);
+				logger.info("page={}, linkedInfoList = {}", i, JSON.toJSONString(linkedInfoList));
+
+				for (CilimaoLinkedInfo linkedInfo : linkedInfoList) {
+					StrBuilder outLine = new StrBuilder();
+
+					if (limitMp4Map.containsKey(linkedInfo.name)) {
+						outLine.append("exists!!!").append('\t');
+					}
+					outLine.append(linkedInfo.name).append('\t');
+
+					outLine.append(linkedInfo.url).append('\t');
+					outLine.append(linkedInfo.createTime).append('\t');
+
+					String str = outLine.toString();
+					logger.info("linked={}", str);
+					outLineList.add(str);
+
 				}
 			}
 		}

@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
-import static org.junit.Assert.*;
 import static cn.lucifer.demo.http.AutoFindToolsTest.*;
 
 public class LimitAutoFindToolsTest {
@@ -16,7 +15,7 @@ public class LimitAutoFindToolsTest {
 
 	@Test
 	public void loadFile() throws Exception {
-		LimitAutoFindTools tools = new LimitAutoFindTools(1, startVideo, javbot3_cookie, load_file_date, result_folder);
+		LimitAutoFindTools tools = new LimitAutoFindTools(1, startVideo, javbot3_cookie_token, load_file_date, result_folder);
 		Map<String, String> limitGirlMap = tools.loadFile("M:\\limit\\aaa\\limit_girl_{}.txt");
 		logger.info("limitGirlMap={}", JSON.toJSONString(limitGirlMap));
 	}

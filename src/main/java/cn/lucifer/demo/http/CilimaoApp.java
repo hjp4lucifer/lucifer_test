@@ -49,7 +49,11 @@ public class CilimaoApp {
 	}
 
 	public List<CilimaoLinkedInfo> getLinkedInfoList(int page) throws IOException, HttpClientException {
-		String urlStr = BASE_URL + url_template + page;
+		return getLinkedInfoList(url_template, page);
+	}
+
+	public List<CilimaoLinkedInfo> getLinkedInfoList(String urlTemplate, int page) throws IOException, HttpClientException {
+		String urlStr = BASE_URL + urlTemplate + page;
 		logger.info("load url={}", urlStr);
 
 		Document doc = getDoc(urlStr);

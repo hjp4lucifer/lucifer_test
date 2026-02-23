@@ -3,14 +3,7 @@ package cn.lucifer.demo.http;
 import cn.lucifer.demo.http.dict.CilimaoSearchTypeEnum;
 import cn.lucifer.demo.http.domain.CilimaoLinkedInfo;
 import cn.lucifer.demo.http.domain.JayBotItemInfo;
-import cn.lucifer.util.StrUtils;
 import com.alibaba.fastjson.JSON;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.text.StrBuilder;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.cookie.BasicCookieStore;
 import org.apache.hc.client5.http.impl.cookie.BasicClientCookie;
 import org.junit.Test;
@@ -18,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class AutoFindToolsTest {
@@ -29,23 +21,28 @@ public class AutoFindToolsTest {
 	 * 如：JUR-417
 	 */
 	static final String startVideo = "";
-	static final String javbot3_cookie = "36f4a1c5bd27f4415f2b0772f2c77c20";
-	static final String load_file_date = "20251213";
+	static final String javbot3_cookie_token = "afbf30807b5575036eec31fd71809b2f";
+	static final String load_file_date = "20260223";
 	static final File result_folder = new File("M:\\limit\\aaa\\limit_search_result");
 
 	@Test
 	public void autoFind_uncensored() throws Exception {
-		final String loadEndTime = "2025-12-10";
+		final String loadEndTime = "2026-01-15";
 		final File oldFile = new File(result_folder, "uncensored_HD_error_20251025_150645.txt");
 
-		LimitAutoFindTools tools = new LimitAutoFindTools(startPage, startVideo, javbot3_cookie, load_file_date, result_folder);
+		LimitAutoFindTools tools = new LimitAutoFindTools(startPage, startVideo, javbot3_cookie_token, load_file_date, result_folder);
 		tools.autoFind(CilimaoSearchTypeEnum.uncensored_HD, loadEndTime, 84, oldFile);
+	}
+
+	@Test
+	public void autoFind_findByAuthor() throws Exception {
+		final String baseUrl = "https://javbot3.top/actor/qvRpm?t=exr";
 	}
 
 	@Test
 	public void autoFind_hdd600() throws Exception {
 		final String loadEndTime = "2021-10-20";
-		LimitAutoFindTools tools = new LimitAutoFindTools(startPage, startVideo, javbot3_cookie, load_file_date, result_folder);
+		LimitAutoFindTools tools = new LimitAutoFindTools(startPage, startVideo, javbot3_cookie_token, load_file_date, result_folder);
 		tools.autoFind(CilimaoSearchTypeEnum.hdd600, loadEndTime, 25, null);
 	}
 
@@ -65,7 +62,7 @@ public class AutoFindToolsTest {
 	public void jayBot_search() throws Exception {
 		final String keyword = "SONE-915";
 		BasicCookieStore cookieStore = new BasicCookieStore();
-		JayBot jayBot = new JayBot(cookieStore);
+		JayBot jayBot = new JayBot(cookieStore, javbot3_cookie_token);
 
 		List<String> urlList = jayBot.search(keyword);
 		logger.info("urlList = {}", JSON.toJSONString(urlList));
@@ -76,11 +73,11 @@ public class AutoFindToolsTest {
 		final String keyword = "SONE-915";
 		BasicCookieStore jayBotCookieStore = new BasicCookieStore();
 		{
-			BasicClientCookie cookie = new BasicClientCookie("csrf_cookie", javbot3_cookie);
+			BasicClientCookie cookie = new BasicClientCookie("csrf_cookie", javbot3_cookie_token);
 			cookie.setDomain("javbot3.top");
 			jayBotCookieStore.addCookie(cookie);
 		}
-		JayBot jayBot = new JayBot(jayBotCookieStore);
+		JayBot jayBot = new JayBot(jayBotCookieStore, javbot3_cookie_token);
 
 		List<JayBotItemInfo> infoList = jayBot.searchV2(keyword);
 		logger.info("infoList = {}", JSON.toJSONString(infoList));
@@ -89,7 +86,7 @@ public class AutoFindToolsTest {
 	@Test
 	public void jayBot_detail() throws Exception {
 		BasicCookieStore cookieStore = new BasicCookieStore();
-			JayBot jayBot = new JayBot(cookieStore);
+			JayBot jayBot = new JayBot(cookieStore, javbot3_cookie_token);
 
 		String url = "/item/ZxYjn";
 		JayBotItemInfo info = jayBot.getDetail(url);
