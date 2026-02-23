@@ -74,12 +74,14 @@ public class CilimaoApp {
 			}
 			Element a = li.select(".SearchListTitle_result_title").get(0);
 			Element info = li.select(".Search_list_info").get(0);
+			String fileSize = StringUtils.substringBetween(info.text(), "文件大小：：", "创建时间：");
 			String createTime = StringUtils.substringBetween(info.text(), "创建时间：", "文件格式：");
 
 			CilimaoLinkedInfo r = new CilimaoLinkedInfo();
 			r.name = a.text();
 			r.url = BASE_URL + a.attr("href");
 			r.createTime = createTime;
+			r.fileSize = fileSize;
 
 			logger.info("infoDto={}", JSON.toJSONString(r));
 

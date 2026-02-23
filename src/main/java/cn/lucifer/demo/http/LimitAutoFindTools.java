@@ -177,7 +177,7 @@ public class LimitAutoFindTools {
 			JayBotActorPageResult pageResult = jayBot.getByActor(actorCode, currentPage);
 			if (1 == currentPage) {
 				actorName = pageResult.actorName;
-				outLineList.add(pageResult.actorName + "\n");
+				outLineList.add(pageResult.actorName);
 			}
 			if (pageResult.items == null || pageResult.items.isEmpty()) {
 				break;
@@ -202,7 +202,7 @@ public class LimitAutoFindTools {
 		for (JayBotItemInfo videoInfo : videoList) {
 			// 写入视频基本信息
 			{
-				StrBuilder outLine = new StrBuilder();
+				StrBuilder outLine = new StrBuilder("\n\n");
 
 				outLine.append(videoInfo.videoNum).append('\t');
 				outLine.append(videoInfo.createTime).append('\t');
@@ -232,9 +232,10 @@ public class LimitAutoFindTools {
 						outLine.append("exists!!!").append('\t');
 					}
 					outLine.append(linkedInfo.name).append('\t');
+					outLine.append(linkedInfo.fileSize).append('\t');
+					outLine.append(linkedInfo.createTime).append('\t');
 
 					outLine.append(linkedInfo.url).append('\t');
-					outLine.append(linkedInfo.createTime).append('\t');
 
 					String str = outLine.toString();
 					logger.info("linked={}", str);
