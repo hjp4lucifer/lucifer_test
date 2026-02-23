@@ -1,5 +1,6 @@
 package cn.lucifer.demo.http;
 
+import cn.lucifer.demo.http.domain.JayBotActorPageResult;
 import cn.lucifer.demo.http.domain.JayBotItemInfo;
 import cn.lucifer.http.HttpClientException;
 import cn.lucifer.http.NameValuePair;
@@ -101,32 +102,34 @@ public class JayBot {
 		return resultList;
 	}
 
-	public List<JayBotItemInfo> getByActor(String actorCode, int maxPage) throws IOException {
+
+	public JayBotActorPageResult getByActor(String actorCode, int page) throws IOException {
 		this.actorCode = actorCode;
 		String url = BASE_URL + "/actor/" + actorCode + "?t=exr";
 
-		List<JayBotItemInfo> resultList = Lists.newArrayList();
+		JayBotActorPageResult result = new JayBotActorPageResult();
 
-		for (int page = 1; page < maxPage; page++) {
-			if (page <= 1) {
-				Document doc = getDoc(url);
-				resultList.addAll(parseDoc(doc));
-			} else {
-				NameValuePair[] parametersBody = {new NameValuePair("stb_csrf_token", cookieToken), new NameValuePair("page", String.valueOf(page))};
+		if (page <= 1) {
+			Document doc = getDoc(url);
+			result.items = parseDoc(doc);
 
-				byte[] resp = HttpClient5Helper.httpPost(url, parametersBody, null, cookieStore);
-				String str = new String(resp);
-				JSONObject jsonObject = JSON.parseObject(str);
-				Document doc = Jsoup.parse(jsonObject.getString("html"));
-				resultList.addAll(parseDoc(doc));
-				if (jsonObject.getInteger("nextPage") <= 0) {
-					break;
-				}
-			}
+			result.actorName = doc.select(".panel-title").get(0).text();
+
+			result.nextPage = 1;
+		} else {
+			NameValuePair[] parametersBody = {new NameValuePair("stb_csrf_token", cookieToken), new NameValuePair("page", String.valueOf(page))};
+
+			byte[] resp = HttpClient5Helper.httpPost(url, parametersBody, null, cookieStore);
+			String str = new String(resp);
+			JSONObject jsonObject = JSON.parseObject(str);
+			Document doc = Jsoup.parse(jsonObject.getString("html"));
+			result.items = parseDoc(doc);
+			result.nextPage = jsonObject.getInteger("nextPage");
 		}
 
-		return resultList;
+		return result;
 	}
+
 
 
 	public JayBotItemInfo getDetail(String detailUrl) throws IOException {

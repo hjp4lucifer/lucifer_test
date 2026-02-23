@@ -21,7 +21,7 @@ public class AutoFindToolsTest {
 	 * 如：JUR-417
 	 */
 	static final String startVideo = "";
-	static final String javbot3_cookie_token = "afbf30807b5575036eec31fd71809b2f";
+	static final String javbot3_cookie_token = "017da5f8d853c670c115c4932c600bb2";
 	static final String load_file_date = "20260223";
 	static final File result_folder = new File("M:\\limit\\aaa\\limit_search_result");
 
@@ -36,7 +36,8 @@ public class AutoFindToolsTest {
 
 	@Test
 	public void autoFind_findByAuthor() throws Exception {
-		final String baseUrl = "https://javbot3.top/actor/qvRpm?t=exr";
+		LimitAutoFindTools tools = new LimitAutoFindTools(startPage, startVideo, javbot3_cookie_token, load_file_date, result_folder);
+		tools.autoFindByAuthor("qvRpm", 100);
 	}
 
 	@Test

@@ -2,6 +2,7 @@ package cn.lucifer.demo.http;
 
 import cn.lucifer.demo.http.dict.CilimaoSearchTypeEnum;
 import cn.lucifer.demo.http.domain.CilimaoLinkedInfo;
+import cn.lucifer.demo.http.domain.JayBotActorPageResult;
 import cn.lucifer.demo.http.domain.JayBotItemInfo;
 import cn.lucifer.util.StrUtils;
 import com.alibaba.fastjson.JSON;
@@ -152,7 +153,6 @@ public class LimitAutoFindTools {
 
 	public void autoFindByAuthor(String actorCode,
 								 int maxPage) throws Exception {
-		final Map<String, String> limitGirlMap = loadFile("limit_girl_{}.txt");
 		final Map<String, String> limitMp4Map = loadFile("limit_mp4_{}.txt");
 
 		File[] mp4FileArray = folder.listFiles(f -> f.getName().endsWith(".mp4"));
@@ -165,14 +165,37 @@ public class LimitAutoFindTools {
 
 		final List<String> outLineList = Lists.newArrayList();
 
-
 		JayBot jayBot = new JayBot(jayBotCookieStore, javbot3CookieToken);
-		List<JayBotItemInfo> videoList = jayBot.getByActor(actorCode, maxPage);
-		logger.info("videoList = {}", JSON.toJSONString(videoList));
+		String actorName = StringUtils.EMPTY;
+
+		// 手动控制分页
+		List<JayBotItemInfo> videoList = Lists.newArrayList();
+		int currentPage = 1;
+		while (currentPage <= maxPage) {
+			JayBotActorPageResult pageResult = jayBot.getByActor(actorCode, currentPage);
+			if (1 == currentPage) {
+				actorName = pageResult.actorName;
+				outLineList.add(pageResult.actorName + "\n");
+			}
+			if (pageResult.items == null || pageResult.items.isEmpty()) {
+				break;
+			}
+			videoList.addAll(pageResult.items);
+			logger.info(StrUtils.generateMessage("videoList page={}, size={}, total={}", currentPage, pageResult.items.size(), videoList.size()));
+
+			if (pageResult.nextPage <= 0) {
+				break;
+			}
+			currentPage++;
+
+			sleepRandom(false);
+		}
+
+		logger.info("videoList total = {}", JSON.toJSONString(videoList));
+
 
 		CilimaoSearchTypeEnum searchTypeEnum = CilimaoSearchTypeEnum.base64;
 		CilimaoApp cilimaoApp = new CilimaoApp(searchTypeEnum, new BasicCookieStore());
-
 
 		for (JayBotItemInfo videoInfo : videoList) {
 			// 写入视频基本信息
@@ -212,12 +235,14 @@ public class LimitAutoFindTools {
 					outLineList.add(str);
 
 				}
+
+				sleepRandom(false);
 			}
 		}
 
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
 		final String outFn = StrUtils.generateMessage("{}_result_{}.txt",
-				searchTypeEnum.name(), dateFormat.format(new Date()));
+				actorName, dateFormat.format(new Date()));
 
 		FileUtils.writeLines(new File(resultFolder, outFn), "utf-8", outLineList);
 	}
