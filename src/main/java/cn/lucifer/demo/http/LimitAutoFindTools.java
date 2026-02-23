@@ -22,10 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.util.Base64;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class LimitAutoFindTools {
 
@@ -165,7 +162,18 @@ public class LimitAutoFindTools {
 			}
 		}
 
+		Stack<String> htmlStack = new Stack<>();
 		final List<String> outLineList = Lists.newArrayList();
+		outLineList.add("<html>");
+		htmlStack.push("</html>");
+		outLineList.add("<head>");
+		htmlStack.push("</head>");
+		// 样式
+		outLineList.add("<style type=\"text/css\">");
+		outLineList.add("h3 span{padding:0px 8px}");
+		outLineList.add("li {padding:3px}");
+		outLineList.add("li span{padding:0px 5px}");
+		outLineList.add("</style>");
 
 		JayBot jayBot = new JayBot(jayBotCookieStore);
 		String actorName = StringUtils.EMPTY;
@@ -177,7 +185,13 @@ public class LimitAutoFindTools {
 			JayBotActorPageResult pageResult = jayBot.getByActor(actorCode, currentPage);
 			if (1 == currentPage) {
 				actorName = pageResult.actorName;
-				outLineList.add(pageResult.actorName);
+				outLineList.add(StrUtils.generateMessage("<title>{}</title>", actorName));
+				outLineList.add(htmlStack.pop());
+
+				outLineList.add("<body>");
+				htmlStack.push("</body>");
+				outLineList.add(StrUtils.generateMessage("<h2>{}</h2>", actorName));
+
 			}
 			if (pageResult.items == null || pageResult.items.isEmpty()) {
 				break;
@@ -202,17 +216,20 @@ public class LimitAutoFindTools {
 		for (JayBotItemInfo videoInfo : videoList) {
 			// 写入视频基本信息
 			{
-				StrBuilder outLine = new StrBuilder("\n\n");
+				StrBuilder outLine = new StrBuilder("\n");
 
-				outLine.append(videoInfo.videoNum).append('\t');
-				outLine.append(videoInfo.createTime).append('\t');
-				outLine.append(videoInfo.score).append('\t');
-				outLine.append(videoInfo.name);
+				outLine.append(StrUtils.generateMessage("<span style=\"color:blue\">{}</span>", videoInfo.videoNum)).append('\t');
+				outLine.append(StrUtils.generateMessage("<span>{}</span>", videoInfo.createTime));
+				outLine.append(StrUtils.generateMessage("<span>{}</span>", videoInfo.score));
+				outLine.append(StrUtils.generateMessage("<span>{}</span>", videoInfo.name));
 
 				String str = outLine.toString();
 				logger.info("video={}", str);
-				outLineList.add(str);
+				outLineList.add(StrUtils.generateMessage("<h3>{}</h3>", str));
 			}
+
+			outLineList.add("<ul>");
+			htmlStack.push("</ul>");
 
 			String keyword = StringUtils.stripEnd(Base64.getEncoder().encodeToString(videoInfo.videoNum.getBytes(StandardCharsets.UTF_8)), "=");
 			String urlTemplate = StrUtils.generateMessage("search?word={}&sort=time&p=", keyword);
@@ -229,27 +246,33 @@ public class LimitAutoFindTools {
 					StrBuilder outLine = new StrBuilder();
 
 					if (limitMp4Map.containsKey(linkedInfo.name)) {
-						outLine.append("exists!!!").append('\t');
+						outLine.append(StrUtils.generateMessage("<span style=\"color:red\">{}</span>", "exists!!!"));
 					}
-					outLine.append(linkedInfo.name).append('\t');
-					outLine.append(linkedInfo.fileSize).append('\t');
-					outLine.append(linkedInfo.createTime).append('\t');
+					outLine.append(StrUtils.generateMessage("<span>{}</span>", linkedInfo.name));
+					outLine.append(StrUtils.generateMessage("<span>{}</span>", linkedInfo.fileSize));
+					outLine.append(StrUtils.generateMessage("<span>{}</span>", linkedInfo.createTime));
 
-					outLine.append(linkedInfo.url).append('\t');
+					outLine.append(StrUtils.generateMessage("<a href=\"{}\" target=\"_black\">{}</a>", linkedInfo.url, linkedInfo.url));
 
 					String str = outLine.toString();
 					logger.info("linked={}", str);
-					outLineList.add(str);
+					outLineList.add(StrUtils.generateMessage("<li>{}</li>", str));
 
 				}
 
 				sleepRandom(false);
 			}
+			outLineList.add(htmlStack.pop());
 		}
 
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
-		final String outFn = StrUtils.generateMessage("{}_result_{}.txt",
+		final String outFn = StrUtils.generateMessage("{}_result_{}.htm",
 				actorName, dateFormat.format(new Date()));
+
+		// 补全html格式
+		while (!htmlStack.isEmpty()) {
+			outLineList.add(htmlStack.pop());
+		}
 
 		FileUtils.writeLines(new File(resultFolder, outFn), "utf-8", outLineList);
 	}
