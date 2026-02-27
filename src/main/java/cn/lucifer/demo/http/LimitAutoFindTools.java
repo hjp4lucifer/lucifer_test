@@ -128,7 +128,13 @@ public class LimitAutoFindTools {
 					String girlRating = limitGirlMap.get(videoInfo.actress);
 					// 评分
 					outLine.append(StringUtils.defaultString(girlRating, "unknowns")).append('\t');
-					outLine.append(videoInfo.actress).append('\t');
+					if (StringUtils.isBlank(videoInfo.actress)) {
+						logger.info("{} 识别不出 actress 名字，查详情页!!!", linkedInfo.name);
+						JayBotItemInfo detail = jayBot.getDetail(videoInfo.detailUrl);
+						outLine.append(detail.actress).append('\t');
+					} else {
+						outLine.append(videoInfo.actress).append('\t');
+					}
 					outLine.append(linkedInfo.name).append('\t');
 
 					outLine.append(videoInfo.score).append('\t');

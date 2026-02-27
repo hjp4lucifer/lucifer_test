@@ -26,4 +26,8 @@ public class JayBotItemInfo {
 	 * 评分人数
 	 */
 	public String ratingNum;
+	/**
+	 * 详情页, 如：/item/1ywj7
+	 */
+	public String detailUrl;
 }

@@ -25,13 +25,13 @@ public class AutoFindToolsTest {
 	 * 如：JUR-417
 	 */
 	static final String startVideo = "";
-	static final String javbot3_cookie = "server_name_session=8be949241b0363e6537e06e054d75dc4; _clck=snbd7f^2^g3t^0^2027; b94d0f4097de070c3771d5969dd5ee4b=6fe8dd0d1e9fdb44105535dee5415e36; csrf_cookie=82e2bc4ff12b8a65e243907e1b299745; cqse=VjRWPVQ3WjcHKgIkBzpRY1ZmVG4ILVYhUjVUJgJ3BWpQPFFiBVQHblQzVCcAbVt/VjpRN1xpBz5TcQA3BTMGMAVkUGZWYQIyAjAEblI+U2FWYVZlVGFaNAcyAjEHNlFmVjVUNQg/VjRSZlRjAjAFYlBgUTQFOQdiVDRUJwBtW39WOlE1XGsHPlNxAGkFcgZdBWZQNVY0AnYCZAQqUi9TcVZuVnRUOFo8B2ICbQciUWZWY1R6CD5WZ1JhVHsCNQUwUGFRIgU/BzNUdVQ+ACVbNlYxUTRcYQcmUyYAcwVnBnAFWFAwVjcCYQJvBC1SflNoViZWPVQzWjwHZAJtByJRH1Y5VC4IZlY+UjxUNAIrBTZQfVE8BSsHL1QAVGwAOFtoVm9Rc1woByRTHQBUBSIGMwU3UH9WYAI/AiEEDlI1Uz1WY1YzVDlaLQcpAmEHNFF7VnZUFQh/ViJSPFQwAlMFZlAxUUcFYgdzVHhUMABlWztWLlE3XG0HJFN7AEsFSgZWBUpQHVZ8AiQCbQQwUjdTNlZ1VkBUZ1puBzoCOAcpUXJWFVQ8CH1WPVI9VDACKwU6UGFRIgU7BylUY1QwAGdbOVYuUTVcawczU3MAUwVjBmQFZlAjVjkCKwI0BGpSa1N9VmZWMVQgWjYHIgJtBzFRYVZsVHYIY1YzUiNUIQJbBWJQMFF4BWIHcVQ+VHEAL1suVjtRbVxhBzVTZAA3BTMGOgUxUGJWZAI8AjYEYlIvU2lWbFY9VCBaeAciAjIHclENVjJUNQh7VjNSclRuAncFOVBjUTYFKQclVGxUeA==; _clsk=2x680l^1771863491178^2^1^a.clarity.ms/collect";
+	static final String javbot3_cookie = "server_name_session=e792d82e9c1b6ee5dcef9abb425c22a2; 6e8680a6d5248bc968590e6e689a0b9a=6317e64ba6f77218ae659f2fe0b0aa92; csrf_cookie=d578ea93592d3bef4d7ab59ec1023871; cqse=VjRVPgVmBmtadwQiUWwHNV1tUmgILQF2XzhSIAB1AG8BbQY1Dl9UPQdgVSZTPlJ2VTkFY1NmAThRc1BlVGoNPVEyUTYHYwIyATBUPlQ4BGVWZlUyBTAGZVo9BDNRZAdhXThSYAg/ATxfa1JrADIAYAFjBmoOMFRnBzVVJlM+UnZVOQVhU2QBOFFzUDlUIw1WUTJRNAdlAnYBZ1R6VCkEJlZuVXcFaQZgWj8Ea1F0BzBdaFJ8CD4BMF9sUn0ANwA1ATAGdQ40VGAHJlU/U3ZSP1UyBWBTbgEgUSRQI1Q2DXtRDFExB2YCYQFsVH1UeAQ/ViZVPgViBmBaOQRrUXQHSV0yUigIZgFpXzFSMgApADMBLAZrDiBUfAdTVW1Ta1JhVWwFJ1MnASJRH1AEVHMNOFFjUX4HMQI/ASJUXlQzBGpWY1UwBWgGcVp0BGdRYgctXX1SEwh/AXVfMVI2AFEAYwFgBhAOaVQgBytVMVM2UjJVLQVjU2IBIlF5UBtUGw1dUR5RHActAiQBblRgVDEEYVZ1VUMFNgYyWmcEPlF/ByRdHlI6CH0Bal8wUjYAKQA/ATAGdQ4wVHoHMFUxUzRSMFUtBWFTZAE1UXFQA1QyDW9RMlEiB2gCKwE3VDpUbQQqVmZVMgVxBmpafwRrUWcHN11nUnAIYwFkXy5SJwBZAGcBYQYvDmlUIgdtVXBTfFInVTgFOVNuATNRZlBnVGENO1FjUWkHNwI0ATpUMlQpBD5WbFU+BXEGJFp/BDRRJAdbXTlSMwh7AWRff1JoAHUAPAEyBmEOIlR2Bz9VeQ==; _clck=snbd7f^2^g3x^0^2027; _clsk=1xa2rxv^1772209614681^1^1^q.clarity.ms/collect";
 	static final String load_file_date = "20260223";
 	static final File result_folder = new File("M:\\limit\\aaa\\limit_search_result");
 
 	@Test
 	public void autoFind_uncensored() throws Exception {
-		final String loadEndTime = "2026-01-15";
+		final String loadEndTime = "2026-02-15";
 		final File oldFile = new File(result_folder, "uncensored_HD_error_20251025_150645.txt");
 
 		LimitAutoFindTools tools = new LimitAutoFindTools(startPage, startVideo, javbot3_cookie, load_file_date, result_folder);
@@ -41,7 +41,7 @@ public class AutoFindToolsTest {
 	@Test
 	public void autoFind_findByAuthor() throws Exception {
 		LimitAutoFindTools tools = new LimitAutoFindTools(startPage, startVideo, javbot3_cookie, load_file_date, result_folder);
-		tools.autoFindByAuthor("qvRpm", 100);
+		tools.autoFindByAuthor("8KPWy", 100);
 	}
 
 	@Test

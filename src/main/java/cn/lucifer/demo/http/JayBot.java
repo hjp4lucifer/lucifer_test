@@ -75,7 +75,12 @@ public class JayBot {
 			Element caption = thumbnail.select(".caption").get(0);
 
 			JayBotItemInfo result = new JayBotItemInfo();
-			String title = caption.select("h3").get(0).text();
+			Elements h3 = caption.select("h3");
+
+			Element detailInfo = h3.select("a").get(0);
+			result.detailUrl = detailInfo.attr("href");
+
+			String title = detailInfo.text();
 			String[] split = StringUtils.split(title, " ");
 
 			result.videoNum = split[0];
