@@ -5,6 +5,9 @@ import cn.lucifer.demo.http.domain.CilimaoLinkedInfo;
 import cn.lucifer.demo.http.domain.JayBotItemInfo;
 import cn.lucifer.util.CookiesUtils;
 import com.alibaba.fastjson.JSON;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.apache.hc.client5.http.cookie.BasicCookieStore;
 import org.apache.hc.client5.http.cookie.Cookie;
 import org.apache.hc.client5.http.impl.cookie.BasicClientCookie;
@@ -25,13 +28,33 @@ public class AutoFindToolsTest {
 	 * 如：JUR-417
 	 */
 	static final String startVideo = "";
-	static final String javbot3_cookie = "server_name_session=e792d82e9c1b6ee5dcef9abb425c22a2; 6e8680a6d5248bc968590e6e689a0b9a=6317e64ba6f77218ae659f2fe0b0aa92; csrf_cookie=d578ea93592d3bef4d7ab59ec1023871; cqse=VjRVPgVmBmtadwQiUWwHNV1tUmgILQF2XzhSIAB1AG8BbQY1Dl9UPQdgVSZTPlJ2VTkFY1NmAThRc1BlVGoNPVEyUTYHYwIyATBUPlQ4BGVWZlUyBTAGZVo9BDNRZAdhXThSYAg/ATxfa1JrADIAYAFjBmoOMFRnBzVVJlM+UnZVOQVhU2QBOFFzUDlUIw1WUTJRNAdlAnYBZ1R6VCkEJlZuVXcFaQZgWj8Ea1F0BzBdaFJ8CD4BMF9sUn0ANwA1ATAGdQ40VGAHJlU/U3ZSP1UyBWBTbgEgUSRQI1Q2DXtRDFExB2YCYQFsVH1UeAQ/ViZVPgViBmBaOQRrUXQHSV0yUigIZgFpXzFSMgApADMBLAZrDiBUfAdTVW1Ta1JhVWwFJ1MnASJRH1AEVHMNOFFjUX4HMQI/ASJUXlQzBGpWY1UwBWgGcVp0BGdRYgctXX1SEwh/AXVfMVI2AFEAYwFgBhAOaVQgBytVMVM2UjJVLQVjU2IBIlF5UBtUGw1dUR5RHActAiQBblRgVDEEYVZ1VUMFNgYyWmcEPlF/ByRdHlI6CH0Bal8wUjYAKQA/ATAGdQ4wVHoHMFUxUzRSMFUtBWFTZAE1UXFQA1QyDW9RMlEiB2gCKwE3VDpUbQQqVmZVMgVxBmpafwRrUWcHN11nUnAIYwFkXy5SJwBZAGcBYQYvDmlUIgdtVXBTfFInVTgFOVNuATNRZlBnVGENO1FjUWkHNwI0ATpUMlQpBD5WbFU+BXEGJFp/BDRRJAdbXTlSMwh7AWRff1JoAHUAPAEyBmEOIlR2Bz9VeQ==; _clck=snbd7f^2^g3x^0^2027; _clsk=1xa2rxv^1772209614681^1^1^q.clarity.ms/collect";
-	static final String load_file_date = "20260223";
+	static final String javbot3_cookie = "_clck=snbd7f^2^g4t^0^2027; server_name_session=493cc81fe166d7aafe7c4238c10e811c; 8734c89f8a46a22cb13aa917d4ae2005=5fcf1061a0c5cdaebd3e3aa7f2a762d5; csrf_cookie=f87a7ae537328f1be1ef4655429ca8b2; cqse=AGJROlc0B2oCLwYgXWAENldnBz0GIwRzXzgFdwRxAm0BbQQ3B1YBaAtsAnFXOldzUz9TNQA1CDFScFdiVGdUMlNjVWcCMVNtV2QGPwI+VjcAZlExVzQHNQJsBmVdOQQ2VzQHPgY0BDlfbQU1BDACPAEwBDsHOAE0Cz8CcVc6V3NTP1M3ADcIMVJwVz5UI1QPUzBVMAJgUydXMQYoAn9WdAA4UXNXOwdhAmcGaV14BDNXYgcpBjAENV9sBSoEMwI3ATAEdwc9ATULKgJoV3JXOlM0UzYAPQgpUidXJFQ2VCJTDlU1AmNTMFc6Bi8CLlZtAHBROlcwB2ECYQZpXXgESlc4B30GaARsXzEFZQQtAjEBLARpBykBKQtfAjpXb1dkU2pTcQB0CCtSHFcDVHNUYVNhVXoCNFNuV3QGDAJlVjgANVE0VzoHcAIsBmVdbgQuV3cHRgZxBHBfMQVhBFUCYQFgBBIHYAF1CycCZlcyVzdTK1M1ADEIK1J6VxxUG1QEUxxVGAIoU3VXOAYyAmdWMwAjUUdXZAczAj8GPF1zBCdXFAdvBnMEb18wBWEELQI9ATAEdwc5AS8LPAJmVzBXNVMrUzcANwg8UnJXBFQyVDZTMFUmAm1TeldhBmgCO1Z4ADBRNlcjB2sCJwZpXWsENFdtByUGbQRhXy4FcARdAmUBYQQtB2ABdwthAidXeFciUz5TbwA9CDpSZVdgVGVUZVNgVWcCPFNmV2AGYAJ/VmwAOlE6VyMHJQInBjZdKARYVzMHZgZ1BGFffwU/BHECPgEyBGMHKwEjCzMCLg==";
+	static final String load_file_date = "20260306";
 	static final File result_folder = new File("M:\\limit\\aaa\\limit_search_result");
+
+
+	private final ImmutableMap<String, String> actorCodeMap = ImmutableMap.<String, String>builder()
+			.put("桃乃木かな","8gWEp")
+			.put("篠田ゆう","8KPWy")
+			.put("小島みなみ","Qn3kB")
+			.put("五日市芽依","OE2QM")
+			.put("女神ジュン","Dg2LN")
+			.put("七瀬アリス","qgxmw")
+			.put("三田真鈴","qvRpm")
+			.put("藍芽みずき","jL1gj")
+			.put("夢実かなえ","Q9Jx9")
+			.put("海老咲あお","QpwY2")
+			.put("釈アリス","9lXP2")
+			.put("小那海あや","ZNmJ5")
+			.put("楓カレン","Avqj2")
+			.put("楓ふうあ","8K09m")
+			.put("絵恋空","zADe0")
+			.put("うんぱい","OEXrO")
+			.build();
 
 	@Test
 	public void autoFind_uncensored() throws Exception {
-		final String loadEndTime = "2026-02-15";
+		final String loadEndTime = "2026-03-25";
 		final File oldFile = new File(result_folder, "uncensored_HD_error_20251025_150645.txt");
 
 		LimitAutoFindTools tools = new LimitAutoFindTools(startPage, startVideo, javbot3_cookie, load_file_date, result_folder);
@@ -39,9 +62,23 @@ public class AutoFindToolsTest {
 	}
 
 	@Test
+	public void autoFind_findByAuthor_all() throws Exception {
+		List<String> actorNameList = Lists.newArrayList(actorCodeMap.keySet());
+		actorNameList.remove("桃乃木かな");
+		actorNameList.remove("篠田ゆう");
+
+		for (String actorName : actorNameList) {
+			logger.info("actor={}, code={}", actorName, actorCodeMap.get(actorName));
+			LimitAutoFindTools tools = new LimitAutoFindTools(startPage, startVideo, javbot3_cookie, load_file_date, result_folder);
+
+			tools.autoFindByAuthor(actorCodeMap.get(actorName), 100);
+		}
+	}
+
+	@Test
 	public void autoFind_findByAuthor() throws Exception {
 		LimitAutoFindTools tools = new LimitAutoFindTools(startPage, startVideo, javbot3_cookie, load_file_date, result_folder);
-		tools.autoFindByAuthor("8KPWy", 100);
+		tools.autoFindByAuthor(actorCodeMap.get("小那海あや"), 100);
 	}
 
 	@Test

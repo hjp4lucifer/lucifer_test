@@ -34,23 +34,25 @@ public class LimitAutoFindTools {
 
 	private final int startPage;
 	private final String startVideo;
-	private final String javbot3CookieToken;
 	private final String loadFileDate;
 	private final File resultFolder;
-	private final BasicCookieStore jayBotCookieStore;
+	private BasicCookieStore jayBotCookieStore;
 
-	public LimitAutoFindTools(int startPage, String startVideo, String javbot3Cookie, String loadFileDate, File resultFolder) {
+	protected LimitAutoFindTools(int startPage, String startVideo, String loadFileDate, File resultFolder) {
 		this.startPage = startPage;
 		this.startVideo = startVideo;
+		this.loadFileDate = loadFileDate;
+		this.resultFolder = resultFolder;
+	}
+
+	public LimitAutoFindTools(int startPage, String startVideo, String javbot3Cookie, String loadFileDate, File resultFolder) {
+		this(startPage, startVideo, loadFileDate, resultFolder);
 		BasicCookieStore cookieStore = CookiesUtils.getCookieStore("javbot3.top", javbot3Cookie);
 		String javbot3CookieToken = CookiesUtils.getByName(cookieStore, "csrf_cookie");
 		if (null == javbot3CookieToken) {
 			throw new IllegalArgumentException("javbot3_cookie_token is null");
 		}
 		this.jayBotCookieStore = cookieStore;
-		this.javbot3CookieToken = javbot3CookieToken;
-		this.loadFileDate = loadFileDate;
-		this.resultFolder = resultFolder;
 	}
 
 
@@ -223,7 +225,7 @@ public class LimitAutoFindTools {
 		CilimaoSearchTypeEnum searchTypeEnum = CilimaoSearchTypeEnum.base64;
 		CilimaoApp cilimaoApp = new CilimaoApp(searchTypeEnum, new BasicCookieStore());
 
-		final List<String> buleSuffixList = Lists.newArrayList("-UC", CilimaoSearchTypeEnum.uncensored_HD.getSuffix());
+		final List<String> buleSuffixList = Lists.newArrayList("-UC", "-U", CilimaoSearchTypeEnum.uncensored_HD.getSuffix());
 
 		for (JayBotItemInfo videoInfo : videoList) {
 			// 写入视频基本信息
@@ -309,8 +311,8 @@ public class LimitAutoFindTools {
 		}
 
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
-		final String outFn = StrUtils.generateMessage("{}_result_{}.htm",
-				actorName, dateFormat.format(new Date()));
+		final String outFn = StrUtils.generateMessage("{}_{}.htm",
+				StringUtils.remove(actorName, "演員 "), dateFormat.format(new Date()));
 
 		// 补全html格式
 		while (!htmlStack.isEmpty()) {
@@ -321,30 +323,43 @@ public class LimitAutoFindTools {
 	}
 
 	protected Map<String, String> loadFile(String loadFileTemplate) throws Exception {
+		// 使用日期变量替换模板中的占位符，生成实际文件名
 		String fileName = StrUtils.generateMessage(loadFileTemplate, loadFileDate);
 		final File loadFile = new File(folder, fileName);
 		if (!loadFile.exists()) {
 			throw new RuntimeException("loadFile not exists");
 		}
 
+		// 按行读取文件内容
 		List<String> lineList = FileUtils.readLines(loadFile, "utf-8");
-		Map<String, String> limitGirlMap = Maps.newHashMapWithExpectedSize(lineList.size());
+		// 预分配Map容量，避免频繁扩容
+		Map<String, String> limitGirlMap = Maps.newLinkedHashMapWithExpectedSize(lineList.size());
 		for (String girl : lineList) {
+			// 按Tab分隔每行，第一列为key，第二列为value
 			String[] split = StringUtils.split(girl, '\t');
 			String key = split[0];
 			String value = split[1];
 			putMap(limitGirlMap, key, value);
 
+			// 若key以"_nice.mp4"结尾，仅移除"_nice"后也作为key建立映射（保留.mp4）
+			if (key.endsWith("_nice.mp4")) {
+				String keyWithoutNice = StringUtils.removeEnd(key, "_nice.mp4") + ".mp4";
+				putMap(limitGirlMap, keyWithoutNice, value);
+			}
+
 			// 多名字识别
 			if (value.length() <= 3) {
 				// 确保value是等级，而不是子目录
 				if (key.endsWith("）") && key.contains("（")) {
+					// 提取括号前的主名，建立映射
 					String current = StringUtils.substringBefore(key, "（");
 					putMap(limitGirlMap, current, value);
 
+					// 提取括号内的别名，建立映射
 					String special = StringUtils.substringBetween(key, "（", "）");
 					putMap(limitGirlMap, special, value);
 
+					// 若别名包含顿号，则拆分为多个名字分别映射
 					if (special.contains("、")) {
 						String[] specialArray = StringUtils.split(special, '、');
 						for (String specialName : specialArray) {
