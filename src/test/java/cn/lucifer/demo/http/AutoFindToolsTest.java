@@ -3,6 +3,7 @@ package cn.lucifer.demo.http;
 import cn.lucifer.demo.http.dict.CilimaoSearchTypeEnum;
 import cn.lucifer.demo.http.domain.CilimaoLinkedInfo;
 import cn.lucifer.demo.http.domain.JayBotItemInfo;
+import cn.lucifer.util.ConfigUtils;
 import cn.lucifer.util.CookiesUtils;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.ImmutableMap;
@@ -16,6 +17,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 import static org.junit.Assert.assertNotNull;
@@ -24,37 +29,37 @@ public class AutoFindToolsTest {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	private static final int startPage = 1;
+	private final ImmutableMap<String, String> actorCodeMap = loadActorCodeMap();
 	/**
 	 * 如：JUR-417
 	 */
 	static final String startVideo = "";
-	static final String javbot3_cookie = "_clck=snbd7f^2^g4t^0^2027; server_name_session=493cc81fe166d7aafe7c4238c10e811c; 8734c89f8a46a22cb13aa917d4ae2005=5fcf1061a0c5cdaebd3e3aa7f2a762d5; csrf_cookie=f87a7ae537328f1be1ef4655429ca8b2; cqse=AGJROlc0B2oCLwYgXWAENldnBz0GIwRzXzgFdwRxAm0BbQQ3B1YBaAtsAnFXOldzUz9TNQA1CDFScFdiVGdUMlNjVWcCMVNtV2QGPwI+VjcAZlExVzQHNQJsBmVdOQQ2VzQHPgY0BDlfbQU1BDACPAEwBDsHOAE0Cz8CcVc6V3NTP1M3ADcIMVJwVz5UI1QPUzBVMAJgUydXMQYoAn9WdAA4UXNXOwdhAmcGaV14BDNXYgcpBjAENV9sBSoEMwI3ATAEdwc9ATULKgJoV3JXOlM0UzYAPQgpUidXJFQ2VCJTDlU1AmNTMFc6Bi8CLlZtAHBROlcwB2ECYQZpXXgESlc4B30GaARsXzEFZQQtAjEBLARpBykBKQtfAjpXb1dkU2pTcQB0CCtSHFcDVHNUYVNhVXoCNFNuV3QGDAJlVjgANVE0VzoHcAIsBmVdbgQuV3cHRgZxBHBfMQVhBFUCYQFgBBIHYAF1CycCZlcyVzdTK1M1ADEIK1J6VxxUG1QEUxxVGAIoU3VXOAYyAmdWMwAjUUdXZAczAj8GPF1zBCdXFAdvBnMEb18wBWEELQI9ATAEdwc5AS8LPAJmVzBXNVMrUzcANwg8UnJXBFQyVDZTMFUmAm1TeldhBmgCO1Z4ADBRNlcjB2sCJwZpXWsENFdtByUGbQRhXy4FcARdAmUBYQQtB2ABdwthAidXeFciUz5TbwA9CDpSZVdgVGVUZVNgVWcCPFNmV2AGYAJ/VmwAOlE6VyMHJQInBjZdKARYVzMHZgZ1BGFffwU/BHECPgEyBGMHKwEjCzMCLg==";
-	static final String load_file_date = "20260306";
+	static final String javbot3_cookie = getJavbot3Cookie();
+	static final String load_file_date = "20260418";
 	static final File result_folder = new File("M:\\limit\\aaa\\limit_search_result");
 
+	private static String getJavbot3Cookie() {
+		try {
+			return ConfigUtils.loadStrResource(AutoFindToolsTest.class, "javabot3/javbot3_cookie.txt");
+		} catch (IOException e) {
+			throw new RuntimeException("读取javabot3_cookie.txt失败", e);
+		}
+	}
 
-	private final ImmutableMap<String, String> actorCodeMap = ImmutableMap.<String, String>builder()
-			.put("桃乃木かな","8gWEp")
-			.put("篠田ゆう","8KPWy")
-			.put("小島みなみ","Qn3kB")
-			.put("五日市芽依","OE2QM")
-			.put("女神ジュン","Dg2LN")
-			.put("七瀬アリス","qgxmw")
-			.put("三田真鈴","qvRpm")
-			.put("藍芽みずき","jL1gj")
-			.put("夢実かなえ","Q9Jx9")
-			.put("海老咲あお","QpwY2")
-			.put("釈アリス","9lXP2")
-			.put("小那海あや","ZNmJ5")
-			.put("楓カレン","Avqj2")
-			.put("楓ふうあ","8K09m")
-			.put("絵恋空","zADe0")
-			.put("うんぱい","OEXrO")
-			.build();
+
+	private static ImmutableMap<String, String> loadActorCodeMap() {
+		try {
+			String str = ConfigUtils.loadStrResource(AutoFindToolsTest.class, "javabot3/actor_code_map.json");
+			Map<String, String> map = JSON.parseObject(str, new com.alibaba.fastjson.TypeReference<Map<String, String>>() {});
+			return ImmutableMap.copyOf(map);
+		} catch (IOException e) {
+			throw new RuntimeException("读取actor_code_map.json失败", e);
+		}
+	}
 
 	@Test
 	public void autoFind_uncensored() throws Exception {
-		final String loadEndTime = "2026-03-25";
+		final String loadEndTime = "2026-04-05";
 		final File oldFile = new File(result_folder, "uncensored_HD_error_20251025_150645.txt");
 
 		LimitAutoFindTools tools = new LimitAutoFindTools(startPage, startVideo, javbot3_cookie, load_file_date, result_folder);
@@ -63,9 +68,8 @@ public class AutoFindToolsTest {
 
 	@Test
 	public void autoFind_findByAuthor_all() throws Exception {
-		List<String> actorNameList = Lists.newArrayList(actorCodeMap.keySet());
-		actorNameList.remove("桃乃木かな");
-		actorNameList.remove("篠田ゆう");
+//		List<String> actorNameList = Lists.newArrayList(actorCodeMap.keySet());
+		List<String> actorNameList = Lists.newArrayList("桃乃木かな", "篠田ゆう");
 
 		for (String actorName : actorNameList) {
 			logger.info("actor={}, code={}", actorName, actorCodeMap.get(actorName));
