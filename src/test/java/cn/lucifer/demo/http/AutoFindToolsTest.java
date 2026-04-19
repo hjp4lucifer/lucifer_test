@@ -69,13 +69,13 @@ public class AutoFindToolsTest {
 	@Test
 	public void autoFind_findByAuthor_all() throws Exception {
 //		List<String> actorNameList = Lists.newArrayList(actorCodeMap.keySet());
-		List<String> actorNameList = Lists.newArrayList("篠田ゆう");
+		List<String> actorNameList = Lists.newArrayList("桃乃木かな");
 
 		for (String actorName : actorNameList) {
 			logger.info("actor={}, code={}", actorName, actorCodeMap.get(actorName));
 			LimitAutoFindTools tools = new LimitAutoFindTools(startPage, startVideo, javbot3_cookie, load_file_date, result_folder);
 
-			tools.autoFindByAuthor(actorCodeMap.get(actorName), 100);
+			tools.autoFindByAuthor(actorCodeMap.get(actorName), 1);
 		}
 	}
 

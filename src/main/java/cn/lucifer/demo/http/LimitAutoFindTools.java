@@ -60,15 +60,7 @@ public class LimitAutoFindTools {
 	public void autoFind(CilimaoSearchTypeEnum searchTypeEnum, String loadEndTime,
 						 int maxPage, File oldFile) throws Exception {
 		final Map<String, LoadFileInfo> limitGirlMap = loadFile("limit_girl_{}.txt");
-		final Map<String, LoadFileInfo> limitMp4Map = loadFile("limit_mp4_{}.txt");
-
-		File[] mp4FileArray = folder.listFiles(f -> f.getName().endsWith(".mp4"));
-		if (null != mp4FileArray) {
-			for (File mp4File : mp4FileArray) {
-				String name = mp4File.getName();
-				limitMp4Map.put(name, new LoadFileInfo("unknowns", null));
-			}
-		}
+		final Map<String, LoadFileInfo> limitMp4Map = loadLimitMp4Map();
 
 		final List<String> outLineList = Lists.newArrayList();
 		if (null != oldFile && oldFile.exists()) {
@@ -163,8 +155,52 @@ public class LimitAutoFindTools {
 
 	public void autoFindByAuthor(String actorCode,
 								 int maxPage) throws Exception {
-		final Map<String, LoadFileInfo> limitMp4Map = loadFile("limit_mp4_{}.txt");
+		// 加载本地已有的mp4索引
+		final Map<String, LoadFileInfo> limitMp4Map = loadLimitMp4Map();
 
+		// 初始化HTML输出结构和样式
+		Stack<String> htmlStack = new Stack<>();
+		final List<String> outLineList = Lists.newArrayList();
+		initHtmlHead(outLineList, htmlStack);
+
+		// 分页获取演员的所有视频列表
+		JayBot jayBot = new JayBot(jayBotCookieStore);
+		String actorName = StringUtils.EMPTY;
+		List<JayBotItemInfo> videoList = fetchActorVideoList(jayBot, actorCode, maxPage, outLineList, htmlStack);
+		actorName = videoList.isEmpty() ? actorName : getActorNameFromFirstPage(jayBot, actorCode);
+		logger.info("videoList total = {}", JSON.toJSONString(videoList));
+
+		// 遍历每个视频，在磁力搜索站点查找对应的资源链接
+		CilimaoSearchTypeEnum searchTypeEnum = CilimaoSearchTypeEnum.base64;
+		CilimaoApp cilimaoApp = new CilimaoApp(searchTypeEnum, new BasicCookieStore());
+
+		for (JayBotItemInfo videoInfo : videoList) {
+			// 写入视频基本信息（标题行）
+			appendVideoInfoHeader(outLineList, videoInfo);
+
+			outLineList.add("<ul>");
+			htmlStack.push("</ul>");
+
+			// 构建搜索关键词和URL模板
+			String keyword = StringUtils.stripEnd(Base64.getEncoder().encodeToString(videoInfo.videoNum.getBytes(StandardCharsets.UTF_8)), "=");
+			String urlTemplate = StrUtils.generateMessage("search?word={}&sort=time&p=", keyword);
+
+			// 分页搜索该视频的磁力链接
+			searchLinkedInfoByVideo(cilimaoApp, searchTypeEnum, limitMp4Map, urlTemplate, maxPage, outLineList);
+
+			outLineList.add(htmlStack.pop());
+		}
+
+		// 输出结果文件
+		writeActorResultHtml(actorName, outLineList, htmlStack);
+	}
+
+	/**
+	 * 加载本地mp4索引，并合并当前文件夹下的mp4文件
+	 */
+	private Map<String, LoadFileInfo> loadLimitMp4Map() throws Exception {
+		final Map<String, LoadFileInfo> limitMp4Map = loadFile("limit_mp4_{}.txt");
+		// 将当前文件夹下的mp4文件也加入索引（标记为unknowns）
 		File[] mp4FileArray = folder.listFiles(f -> f.getName().endsWith(".mp4"));
 		if (null != mp4FileArray) {
 			for (File mp4File : mp4FileArray) {
@@ -172,14 +208,18 @@ public class LimitAutoFindTools {
 				limitMp4Map.put(name, new LoadFileInfo("unknowns", null));
 			}
 		}
+		return limitMp4Map;
+	}
 
-		Stack<String> htmlStack = new Stack<>();
-		final List<String> outLineList = Lists.newArrayList();
+	/**
+	 * 初始化HTML文档的头部和样式
+	 */
+	private void initHtmlHead(List<String> outLineList, Stack<String> htmlStack) {
 		outLineList.add("<html>");
 		htmlStack.push("</html>");
 		outLineList.add("<head>");
 		htmlStack.push("</head>");
-		// 样式
+		// 样式定义
 		outLineList.add("<style type=\"text/css\">");
 		outLineList.add("h3 span{padding:0px 8px}");
 		outLineList.add("li {padding:3px}");
@@ -187,130 +227,196 @@ public class LimitAutoFindTools {
 		outLineList.add(".red_b{color:red;font-weight:bolder;}");
 		outLineList.add(".blue_b{color:blue;font-weight:bolder;}");
 		outLineList.add("</style>");
+	}
 
-		JayBot jayBot = new JayBot(jayBotCookieStore);
-		String actorName = StringUtils.EMPTY;
+	/**
+	 * 从第一页获取演员名称
+	 */
+	private String getActorNameFromFirstPage(JayBot jayBot, String actorCode) throws Exception {
+		JayBotActorPageResult firstPage = jayBot.getByActor(actorCode, 1);
+		return firstPage.actorName;
+	}
 
-		// 手动控制分页
+	/**
+	 * 分页获取演员的所有视频列表
+	 */
+	private List<JayBotItemInfo> fetchActorVideoList(JayBot jayBot, String actorCode, int maxPage,
+													 List<String> outLineList, Stack<String> htmlStack) throws Exception {
 		List<JayBotItemInfo> videoList = Lists.newArrayList();
 		int currentPage = 1;
 		while (currentPage <= maxPage) {
 			JayBotActorPageResult pageResult = jayBot.getByActor(actorCode, currentPage);
+			// 首页时写入标题和body开始标签
 			if (1 == currentPage) {
-				actorName = pageResult.actorName;
+				String actorName = pageResult.actorName;
 				outLineList.add(StrUtils.generateMessage("<title>{}</title>", actorName));
-				outLineList.add(htmlStack.pop());
-
+				outLineList.add(htmlStack.pop()); // </head>
 				outLineList.add("<body>");
 				htmlStack.push("</body>");
 				outLineList.add(StrUtils.generateMessage("<h2>{}</h2>", actorName));
-
 			}
+			// 无更多数据则退出
 			if (pageResult.items == null || pageResult.items.isEmpty()) {
 				break;
 			}
 			videoList.addAll(pageResult.items);
 			logger.info(StrUtils.generateMessage("videoList page={}, size={}, total={}", currentPage, pageResult.items.size(), videoList.size()));
 
+			// 无下一页则退出
 			if (pageResult.nextPage <= 0) {
 				break;
 			}
 			currentPage++;
+			sleepRandom(false);
+		}
+		return videoList;
+	}
+
+	/**
+	 * 写入视频基本信息（标题行），包含番号、时间、评分、名称
+	 */
+	private void appendVideoInfoHeader(List<String> outLineList, JayBotItemInfo videoInfo) {
+		StrBuilder outLine = new StrBuilder("\n");
+		outLine.append(StrUtils.generateMessage("<span style=\"color:blue\">{}</span>", videoInfo.videoNum)).append('\t');
+		outLine.append(StrUtils.generateMessage("<span>{}</span>", videoInfo.createTime));
+		outLine.append(StrUtils.generateMessage("<span>{}</span>", videoInfo.score));
+		outLine.append(StrUtils.generateMessage("<span>{}</span>", videoInfo.name));
+		String str = outLine.toString();
+		logger.info("video={}", JSON.toJSONString(videoInfo));
+		outLineList.add(StrUtils.generateMessage("<h3>{}</h3>", str));
+	}
+
+	/**
+	 * 分页搜索视频的磁力链接信息，逐条匹配并写入结果
+	 */
+	private void searchLinkedInfoByVideo(CilimaoApp cilimaoApp, CilimaoSearchTypeEnum searchTypeEnum,
+										 Map<String, LoadFileInfo> limitMp4Map,
+										 String urlTemplate, int maxPage,
+										 List<String> outLineList) throws Exception {
+		final List<String> blueSuffixList = Lists.newArrayList("-UC", "-U", CilimaoSearchTypeEnum.uncensored_HD.getSuffix());
+
+		for (int i = 1; i <= maxPage; i++) {
+			// 带重试的搜索请求
+			List<CilimaoLinkedInfo> linkedInfoList = retrySearchLinkedInfo(cilimaoApp, urlTemplate, i, outLineList);
+			if (linkedInfoList.isEmpty()) {
+				logger.info("page={}, linkedInfoList is empty", i);
+				break;
+			}
+			logger.info("page={}, linkedInfoList = {}", i, JSON.toJSONString(linkedInfoList));
+
+			// 遍历搜索结果，逐条匹配并生成HTML行
+			for (CilimaoLinkedInfo linkedInfo : linkedInfoList) {
+				String htmlLine = buildLinkedInfoLine(linkedInfo, limitMp4Map, searchTypeEnum, blueSuffixList);
+				logger.info("linkedInfo={}", JSON.toJSONString(linkedInfo));
+				outLineList.add(StrUtils.generateMessage("<li>{}</li>", htmlLine));
+			}
 
 			sleepRandom(false);
 		}
+	}
 
-		logger.info("videoList total = {}", JSON.toJSONString(videoList));
-
-
-		CilimaoSearchTypeEnum searchTypeEnum = CilimaoSearchTypeEnum.base64;
-		CilimaoApp cilimaoApp = new CilimaoApp(searchTypeEnum, new BasicCookieStore());
-
-		final List<String> buleSuffixList = Lists.newArrayList("-UC", "-U", CilimaoSearchTypeEnum.uncensored_HD.getSuffix());
-
-		for (JayBotItemInfo videoInfo : videoList) {
-			// 写入视频基本信息
-			{
-				StrBuilder outLine = new StrBuilder("\n");
-
-				outLine.append(StrUtils.generateMessage("<span style=\"color:blue\">{}</span>", videoInfo.videoNum)).append('\t');
-				outLine.append(StrUtils.generateMessage("<span>{}</span>", videoInfo.createTime));
-				outLine.append(StrUtils.generateMessage("<span>{}</span>", videoInfo.score));
-				outLine.append(StrUtils.generateMessage("<span>{}</span>", videoInfo.name));
-
-				String str = outLine.toString();
-				logger.info("video={}", JSON.toJSONString(videoInfo));
-				outLineList.add(StrUtils.generateMessage("<h3>{}</h3>", str));
+	/**
+	 * 带重试的搜索请求，最多重试3次
+	 */
+	private List<CilimaoLinkedInfo> retrySearchLinkedInfo(CilimaoApp cilimaoApp, String urlTemplate,
+														  int page, List<String> outLineList) {
+		for (int retry = 0; retry < 3; retry++) {
+			try {
+				return cilimaoApp.getLinkedInfoList(urlTemplate, page);
+			} catch (Exception e) {
+				if (retry < 2) {
+					logger.error("retry={}", retry, e);
+					sleepRandom(true);
+					continue;
+				}
+				outLineList.add(StrUtils.generateMessage("<li class=\"red_b\">page={} is error</li>", page));
 			}
+		}
+		return Lists.newArrayList();
+	}
 
-			outLineList.add("<ul>");
-			htmlStack.push("</ul>");
+	/**
+	 * 构建单条磁力链接信息的HTML行
+	 * 匹配逻辑：标题匹配本地已有mp4，文件大小匹配则高亮（blue_b）
+	 */
+	private String buildLinkedInfoLine(CilimaoLinkedInfo linkedInfo, Map<String, LoadFileInfo> limitMp4Map,
+									   CilimaoSearchTypeEnum searchTypeEnum, List<String> blueSuffixList) {
+		StrBuilder outLine = new StrBuilder();
+		String linkedTitle = linkedInfo.name;
 
-			String keyword = StringUtils.stripEnd(Base64.getEncoder().encodeToString(videoInfo.videoNum.getBytes(StandardCharsets.UTF_8)), "=");
-			String urlTemplate = StrUtils.generateMessage("search?word={}&sort=time&p=", keyword);
-
-			for (int i = 1; i <= maxPage; i++) {
-				List<CilimaoLinkedInfo> linkedInfoList = null;
-				for (int retry = 0; retry < 3; retry++) {
-					try {
-						linkedInfoList = cilimaoApp.getLinkedInfoList(urlTemplate, i);
-						break;
-					} catch (Exception e) {
-						if (retry < 2) {
-							logger.error("retry={}", retry, e);
-							sleepRandom(true);
-							continue;
-						}
-						outLineList.add(StrUtils.generateMessage("<li class=\"red_b\">page={} is error</li>", i));
-					}
-				}
-				if (linkedInfoList.isEmpty()) {
-					logger.info("page={}, linkedInfoList is empty", i);
-					break;
-				}
-				logger.info("page={}, linkedInfoList = {}", i, JSON.toJSONString(linkedInfoList));
-
-				for (CilimaoLinkedInfo linkedInfo : linkedInfoList) {
-					StrBuilder outLine = new StrBuilder();
-
-					boolean exists = false;
-					String linkedTitle = linkedInfo.name;
-					if (limitMp4Map.containsKey(linkedTitle)) {
-						exists = true;
-					} else if (linkedTitle.endsWith(CilimaoSearchTypeEnum.uncensored_HD.getSuffix())) {
-						String mp4Name = StringUtils.removeEnd(linkedTitle, CilimaoSearchTypeEnum.uncensored_HD.getSuffix());
-						mp4Name += CilimaoSearchTypeEnum.uncensored_HD.getToMp4Suffix();
-						exists = limitMp4Map.containsKey(mp4Name);
-					} else if (StringUtils.isNotEmpty(searchTypeEnum.getToMp4Suffix())) {
-						String mp4Name = linkedTitle + searchTypeEnum.getToMp4Suffix();
-						exists = limitMp4Map.containsKey(mp4Name);
-					}
-					if (exists) {
-						outLine.append(StrUtils.generateMessage("<span class=\"red_b\">{}</span>", "exists!!!"));
-					}
-
-					boolean blueTitle = buleSuffixList.stream().anyMatch(linkedTitle::endsWith);
-					if (blueTitle) {
-						outLine.append(StrUtils.generateMessage("<span class=\"blue_b\">{}</span>", linkedTitle));
-					} else {
-						outLine.append(StrUtils.generateMessage("<span>{}</span>", linkedTitle));
-					}
-					outLine.append(StrUtils.generateMessage("<span>{}</span>", linkedInfo.fileSize));
-					outLine.append(StrUtils.generateMessage("<span>{}</span>", linkedInfo.createTime));
-
-					outLine.append(StrUtils.generateMessage("<a href=\"{}\" target=\"_black\">{}</a>", linkedInfo.url, linkedInfo.url));
-
-					String str = outLine.toString();
-					logger.info("linkedInfo={}", JSON.toJSONString(linkedInfo));
-					outLineList.add(StrUtils.generateMessage("<li>{}</li>", str));
-
-				}
-
-				sleepRandom(false);
+		// 检查本地是否已存在该资源
+		boolean exists = false;
+		LoadFileInfo matchedInfo = null;
+		if (limitMp4Map.containsKey(linkedTitle)) {
+			exists = true;
+			matchedInfo = limitMp4Map.get(linkedTitle);
+		} else if (linkedTitle.endsWith(CilimaoSearchTypeEnum.uncensored_HD.getSuffix())) {
+			// 无码高清后缀转换
+			String mp4Name = StringUtils.removeEnd(linkedTitle, CilimaoSearchTypeEnum.uncensored_HD.getSuffix());
+			mp4Name += CilimaoSearchTypeEnum.uncensored_HD.getToMp4Suffix();
+			if (limitMp4Map.containsKey(mp4Name)) {
+				exists = true;
+				matchedInfo = limitMp4Map.get(mp4Name);
 			}
-			outLineList.add(htmlStack.pop());
+		} else if (StringUtils.isNotEmpty(searchTypeEnum.getToMp4Suffix())) {
+			// 根据搜索类型后缀转换
+			String mp4Name = linkedTitle + searchTypeEnum.getToMp4Suffix();
+			if (limitMp4Map.containsKey(mp4Name)) {
+				exists = true;
+				matchedInfo = limitMp4Map.get(mp4Name);
+			}
 		}
 
+		// 已存在的资源标记为红色
+		if (exists) {
+			outLine.append(StrUtils.generateMessage("<span class=\"red_b\">{}</span>", "exists!!!"));
+		}
+
+		// 标题：特定后缀（无码等）高亮为蓝色
+		boolean blueTitle = blueSuffixList.stream().anyMatch(linkedTitle::endsWith);
+		if (blueTitle) {
+			outLine.append(StrUtils.generateMessage("<span class=\"blue_b\">{}</span>", linkedTitle));
+		} else {
+			outLine.append(StrUtils.generateMessage("<span>{}</span>", linkedTitle));
+		}
+
+		// 文件大小：与本地记录匹配时高亮为蓝色（仅GB单位参与匹配）
+		boolean fileSizeMatched = checkFileSizeMatched(exists, matchedInfo, linkedInfo.fileSize);
+		if (fileSizeMatched) {
+			outLine.append(StrUtils.generateMessage("<span class=\"blue_b\">{}</span>", linkedInfo.fileSize));
+		} else {
+			outLine.append(StrUtils.generateMessage("<span>{}</span>", linkedInfo.fileSize));
+		}
+
+		// 创建时间和链接
+		outLine.append(StrUtils.generateMessage("<span>{}</span>", linkedInfo.createTime));
+		outLine.append(StrUtils.generateMessage("<a href=\"{}\" target=\"_black\">{}</a>", linkedInfo.url, linkedInfo.url));
+
+		return outLine.toString();
+	}
+
+	/**
+	 * 检查文件大小是否与本地记录匹配（仅GB单位参与匹配，差值<0.005视为匹配）
+	 */
+	private boolean checkFileSizeMatched(boolean exists, LoadFileInfo matchedInfo, String linkedFileSize) {
+		if (!exists || matchedInfo == null || matchedInfo.fileSizeGB == null
+				|| linkedFileSize == null || !linkedFileSize.endsWith(" GB")) {
+			return false;
+		}
+		String linkedFileSizeNum = StringUtils.removeEnd(linkedFileSize, " GB");
+		try {
+			double linkedGB = Double.parseDouble(linkedFileSizeNum);
+			double storedGB = Double.parseDouble(matchedInfo.fileSizeGB);
+			return Math.abs(linkedGB - storedGB) < 0.005;
+		} catch (NumberFormatException e) {
+			return false;
+		}
+	}
+
+	/**
+	 * 补全HTML格式并写入结果文件
+	 */
+	private void writeActorResultHtml(String actorName, List<String> outLineList, Stack<String> htmlStack) throws IOException {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
 		final String outFn = StrUtils.generateMessage("{}_{}.htm",
 				StringUtils.remove(actorName, "演員 "), dateFormat.format(new Date()));
