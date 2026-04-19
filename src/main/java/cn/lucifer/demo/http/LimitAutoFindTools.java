@@ -407,7 +407,7 @@ public class LimitAutoFindTools {
 		try {
 			double linkedGB = Double.parseDouble(linkedFileSizeNum);
 			double storedGB = Double.parseDouble(matchedInfo.fileSizeGB);
-			return Math.abs(linkedGB - storedGB) < 0.005;
+			return Math.abs(linkedGB - storedGB) <= 0.1;
 		} catch (NumberFormatException e) {
 			return false;
 		}
