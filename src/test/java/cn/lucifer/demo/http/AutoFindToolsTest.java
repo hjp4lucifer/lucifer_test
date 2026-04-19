@@ -69,7 +69,7 @@ public class AutoFindToolsTest {
 	@Test
 	public void autoFind_findByAuthor_all() throws Exception {
 //		List<String> actorNameList = Lists.newArrayList(actorCodeMap.keySet());
-		List<String> actorNameList = Lists.newArrayList("桃乃木かな", "篠田ゆう");
+		List<String> actorNameList = Lists.newArrayList("篠田ゆう");
 
 		for (String actorName : actorNameList) {
 			logger.info("actor={}, code={}", actorName, actorCodeMap.get(actorName));

@@ -4,6 +4,7 @@ import cn.lucifer.demo.http.dict.CilimaoSearchTypeEnum;
 import cn.lucifer.demo.http.domain.CilimaoLinkedInfo;
 import cn.lucifer.demo.http.domain.JayBotActorPageResult;
 import cn.lucifer.demo.http.domain.JayBotItemInfo;
+import cn.lucifer.demo.http.domain.LoadFileInfo;
 import cn.lucifer.http.HttpClientException;
 import cn.lucifer.util.CookiesUtils;
 import cn.lucifer.util.StrUtils;
@@ -58,14 +59,14 @@ public class LimitAutoFindTools {
 
 	public void autoFind(CilimaoSearchTypeEnum searchTypeEnum, String loadEndTime,
 						 int maxPage, File oldFile) throws Exception {
-		final Map<String, String> limitGirlMap = loadFile("limit_girl_{}.txt");
-		final Map<String, String> limitMp4Map = loadFile("limit_mp4_{}.txt");
+		final Map<String, LoadFileInfo> limitGirlMap = loadFile("limit_girl_{}.txt");
+		final Map<String, LoadFileInfo> limitMp4Map = loadFile("limit_mp4_{}.txt");
 
 		File[] mp4FileArray = folder.listFiles(f -> f.getName().endsWith(".mp4"));
 		if (null != mp4FileArray) {
 			for (File mp4File : mp4FileArray) {
 				String name = mp4File.getName();
-				limitMp4Map.put(name, "unknowns");
+				limitMp4Map.put(name, new LoadFileInfo("unknowns", null));
 			}
 		}
 
@@ -127,7 +128,7 @@ public class LimitAutoFindTools {
 						}
 					}
 
-					String girlRating = limitGirlMap.get(videoInfo.actress);
+					String girlRating = limitGirlMap.containsKey(videoInfo.actress) ? limitGirlMap.get(videoInfo.actress).parentName : null;
 					// 评分
 					outLine.append(StringUtils.defaultString(girlRating, "unknowns")).append('\t');
 					if (StringUtils.isBlank(videoInfo.actress)) {
@@ -162,13 +163,13 @@ public class LimitAutoFindTools {
 
 	public void autoFindByAuthor(String actorCode,
 								 int maxPage) throws Exception {
-		final Map<String, String> limitMp4Map = loadFile("limit_mp4_{}.txt");
+		final Map<String, LoadFileInfo> limitMp4Map = loadFile("limit_mp4_{}.txt");
 
 		File[] mp4FileArray = folder.listFiles(f -> f.getName().endsWith(".mp4"));
 		if (null != mp4FileArray) {
 			for (File mp4File : mp4FileArray) {
 				String name = mp4File.getName();
-				limitMp4Map.put(name, "unknowns");
+				limitMp4Map.put(name, new LoadFileInfo("unknowns", null));
 			}
 		}
 
@@ -322,7 +323,7 @@ public class LimitAutoFindTools {
 		FileUtils.writeLines(new File(resultFolder, outFn), "utf-8", outLineList);
 	}
 
-	protected Map<String, String> loadFile(String loadFileTemplate) throws Exception {
+	protected Map<String, LoadFileInfo> loadFile(String loadFileTemplate) throws Exception {
 		// 使用日期变量替换模板中的占位符，生成实际文件名
 		String fileName = StrUtils.generateMessage(loadFileTemplate, loadFileDate);
 		final File loadFile = new File(folder, fileName);
@@ -333,37 +334,46 @@ public class LimitAutoFindTools {
 		// 按行读取文件内容
 		List<String> lineList = FileUtils.readLines(loadFile, "utf-8");
 		// 预分配Map容量，避免频繁扩容
-		Map<String, String> limitGirlMap = Maps.newLinkedHashMapWithExpectedSize(lineList.size());
-		for (String girl : lineList) {
-			// 按Tab分隔每行，第一列为key，第二列为value
-			String[] split = StringUtils.split(girl, '\t');
+		Map<String, LoadFileInfo> limitMap = Maps.newLinkedHashMapWithExpectedSize(lineList.size());
+		for (String line : lineList) {
+			// 按Tab分隔每行，第一列为key，第二列为parentName或fileSizeGB，第三列为parentName（当有fileSizeGB时）
+			String[] split = StringUtils.split(line, '\t');
 			String key = split[0];
-			String value = split[1];
-			putMap(limitGirlMap, key, value);
+			String parentName;
+			String fileSizeGB = null;
+			if (split.length >= 3) {
+				// 格式: key\tfileSizeGB\tparentName
+				fileSizeGB = split[1];
+				parentName = split[2];
+			} else {
+				// 格式: key\tparentName
+				parentName = split[1];
+			}
+			putMap(limitMap, key, new LoadFileInfo(parentName, fileSizeGB));
 
 			// 若key以"_nice.mp4"结尾，仅移除"_nice"后也作为key建立映射（保留.mp4）
 			if (key.endsWith("_nice.mp4")) {
 				String keyWithoutNice = StringUtils.removeEnd(key, "_nice.mp4") + ".mp4";
-				putMap(limitGirlMap, keyWithoutNice, value);
+				putMap(limitMap, keyWithoutNice, new LoadFileInfo(parentName, fileSizeGB));
 			}
 
 			// 多名字识别
-			if (value.length() <= 3) {
-				// 确保value是等级，而不是子目录
+			if (parentName.length() <= 3) {
+				// 确保parentName是等级，而不是子目录
 				if (key.endsWith("）") && key.contains("（")) {
 					// 提取括号前的主名，建立映射
 					String current = StringUtils.substringBefore(key, "（");
-					putMap(limitGirlMap, current, value);
+					putMap(limitMap, current, new LoadFileInfo(parentName, fileSizeGB));
 
 					// 提取括号内的别名，建立映射
 					String special = StringUtils.substringBetween(key, "（", "）");
-					putMap(limitGirlMap, special, value);
+					putMap(limitMap, special, new LoadFileInfo(parentName, fileSizeGB));
 
 					// 若别名包含顿号，则拆分为多个名字分别映射
 					if (special.contains("、")) {
 						String[] specialArray = StringUtils.split(special, '、');
 						for (String specialName : specialArray) {
-							putMap(limitGirlMap, specialName, value);
+							putMap(limitMap, specialName, new LoadFileInfo(parentName, fileSizeGB));
 						}
 					}
 				}
@@ -371,15 +381,15 @@ public class LimitAutoFindTools {
 
 		}
 
-		return limitGirlMap;
+		return limitMap;
 	}
 
-	private void putMap(Map<String, String> limitGirlMap, String key, String value) {
-		if (limitGirlMap.containsKey(key)) {
-			logger.warn("girl={} 重复了!!! value={}", key, value);
+	private void putMap(Map<String, LoadFileInfo> limitMap, String key, LoadFileInfo info) {
+		if (limitMap.containsKey(key)) {
+			logger.warn("girl={} 重复了!!! parentName={}", key, info.parentName);
 			return;
 		}
-		limitGirlMap.put(key, value);
+		limitMap.put(key, info);
 	}
 
 	private List<JayBotItemInfo> searchV2(JayBot jayBot, String name, List<String> outLineList,

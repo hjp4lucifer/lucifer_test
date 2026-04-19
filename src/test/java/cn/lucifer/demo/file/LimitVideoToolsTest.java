@@ -140,15 +140,16 @@ public class LimitVideoToolsTest {
 				String mp4 = f.getName();
 				boolean repeat = mp4NameMap.containsKey(mp4);
 
+				String fileSizeGB = String.format("%.2f", f.length() / 1024.0 / 1024.0 / 1024.0);
 				if (repeat) {
-					String msg = StrUtils.generateMessage("{}\t*****  repeat  *****\tsource={}, dest={}",
-							mp4,
+					String msg = StrUtils.generateMessage("{}\t{}\t*****  repeat  *****\tsource={}, dest={}",
+							mp4, fileSizeGB,
 							f.getAbsolutePath(),
 							mp4NameMap.get(mp4).get(0).getAbsolutePath());
 					outLineList.add(msg);
 				} else {
 					mp4NameMap.put(mp4, f);
-					outLineList.add(StrUtils.generateMessage("{}\t{}", mp4, girlName));
+					outLineList.add(StrUtils.generateMessage("{}\t{}\t{}", mp4, fileSizeGB, girlName));
 				}
 			}
 		}
