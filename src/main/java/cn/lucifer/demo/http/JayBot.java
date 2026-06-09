@@ -19,6 +19,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,9 +28,16 @@ import java.util.Map;
  * jayBot
  */
 public class JayBot {
-	private static final String BASE_URL = "https://javbot3.top";
+	public static final String COOKIE_DOMAIN = "45.151.132.44";
+
+	private static final String BASE_URL = "https://45.151.132.44:2006";
 
 	private static final String URL_TEMPLATE = "/search?wd=";
+
+	/**
+	 * 混淆脚本前缀标识
+	 */
+	private static final String OBFUSCATED_PREFIX = "<script>document.write(decodeURIComponent(window.atob(\"";
 
 	private final BasicCookieStore cookieStore;
 
@@ -180,7 +188,36 @@ public class JayBot {
 
 	private Document getDoc(String url) throws IOException, HttpClientException {
 		byte[] resp = HttpClient5Helper.httpGet(url, null, null, cookieStore);
-		String str = new String(resp);
-		return Jsoup.parse(str);
+		String str = new String(resp, StandardCharsets.UTF_8);
+
+		String html = decodeObfuscatedResponse(str.trim());
+		return Jsoup.parse(html);
+	}
+
+	/**
+	 * 如果响应是混淆脚本（document.write(decodeURIComponent(atob(...)))），
+	 * 则解码出真实HTML；否则原样返回。
+	 */
+	private String decodeObfuscatedResponse(String raw) {
+		if (raw == null || raw.isEmpty()) {
+			return raw;
+		}
+		if (!raw.startsWith(OBFUSCATED_PREFIX)) {
+			return raw;
+		}
+		// 从 atob(" 之后截取 Base64 字符串，到 ")));</script> 为止
+		int beginIndex = OBFUSCATED_PREFIX.length();
+		int endIndex = raw.indexOf("\")));</script>", beginIndex);
+		if (endIndex < 0) {
+			return raw;
+		}
+		String base64Str = raw.substring(beginIndex, endIndex);
+		try {
+			byte[] decodedBytes = Base64.decodeBase64(base64Str);
+			return java.net.URLDecoder.decode(new String(decodedBytes, StandardCharsets.UTF_8), "UTF-8");
+		} catch (Exception e) {
+			// 解码失败则回退到原始响应
+			return raw;
+		}
 	}
 }

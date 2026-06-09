@@ -35,7 +35,7 @@ public class AutoFindToolsTest {
 	 */
 	static final String startVideo = "";
 	static final String javbot3_cookie = getJavbot3Cookie();
-	static final String load_file_date = "20260418";
+	static final String load_file_date = "20260419";
 	static final File result_folder = new File("M:\\limit\\aaa\\limit_search_result");
 
 	private static String getJavbot3Cookie() {
@@ -59,7 +59,7 @@ public class AutoFindToolsTest {
 
 	@Test
 	public void autoFind_uncensored() throws Exception {
-		final String loadEndTime = "2026-04-05";
+		final String loadEndTime = "2026-04-10";
 		final File oldFile = new File(result_folder, "uncensored_HD_error_20251025_150645.txt");
 
 		LimitAutoFindTools tools = new LimitAutoFindTools(startPage, startVideo, javbot3_cookie, load_file_date, result_folder);
@@ -75,7 +75,7 @@ public class AutoFindToolsTest {
 			logger.info("actor={}, code={}", actorName, actorCodeMap.get(actorName));
 			LimitAutoFindTools tools = new LimitAutoFindTools(startPage, startVideo, javbot3_cookie, load_file_date, result_folder);
 
-			tools.autoFindByAuthor(actorCodeMap.get(actorName), 1);
+			tools.autoFindByAuthor(actorCodeMap.get(actorName), 100);
 		}
 	}
 
@@ -108,7 +108,7 @@ public class AutoFindToolsTest {
 	public void jayBot_search() throws Exception {
 		final String keyword = "SONE-915";
 		BasicCookieStore cookieStore = new BasicCookieStore();
-		JayBot jayBot = new JayBot(CookiesUtils.getCookieStore("javbot3.top", javbot3_cookie));
+		JayBot jayBot = new JayBot(CookiesUtils.getCookieStore(JayBot.COOKIE_DOMAIN, javbot3_cookie));
 
 		List<String> urlList = jayBot.search(keyword);
 		logger.info("urlList = {}", JSON.toJSONString(urlList));
@@ -117,7 +117,7 @@ public class AutoFindToolsTest {
 	@Test
 	public void jayBot_searchV2() throws Exception {
 		final String keyword = "SONE-915";
-		JayBot jayBot = new JayBot(CookiesUtils.getCookieStore("javbot3.top", javbot3_cookie));
+		JayBot jayBot = new JayBot(CookiesUtils.getCookieStore(JayBot.COOKIE_DOMAIN, javbot3_cookie));
 
 		List<JayBotItemInfo> infoList = jayBot.searchV2(keyword);
 		logger.info("infoList = {}", JSON.toJSONString(infoList));
@@ -126,7 +126,7 @@ public class AutoFindToolsTest {
 	@Test
 	public void jayBot_detail() throws Exception {
 		BasicCookieStore cookieStore = new BasicCookieStore();
-		JayBot jayBot = new JayBot(CookiesUtils.getCookieStore("javbot3.top", javbot3_cookie));
+		JayBot jayBot = new JayBot(CookiesUtils.getCookieStore(JayBot.COOKIE_DOMAIN, javbot3_cookie));
 
 		String url = "/item/ZxYjn";
 		JayBotItemInfo info = jayBot.getDetail(url);

@@ -48,7 +48,7 @@ public class LimitAutoFindTools {
 
 	public LimitAutoFindTools(int startPage, String startVideo, String javbot3Cookie, String loadFileDate, File resultFolder) {
 		this(startPage, startVideo, loadFileDate, resultFolder);
-		BasicCookieStore cookieStore = CookiesUtils.getCookieStore("javbot3.top", javbot3Cookie);
+		BasicCookieStore cookieStore = CookiesUtils.getCookieStore(JayBot.COOKIE_DOMAIN, javbot3Cookie);
 		String javbot3CookieToken = CookiesUtils.getByName(cookieStore, "csrf_cookie");
 		if (null == javbot3CookieToken) {
 			throw new IllegalArgumentException("javbot3_cookie_token is null");
