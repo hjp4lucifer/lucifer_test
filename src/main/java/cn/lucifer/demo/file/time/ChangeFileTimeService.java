@@ -16,10 +16,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.Set;
 
 /**
  * 把文件的创建时间、修改时间、访问时间统一写成同一个值。<br>
@@ -37,9 +34,6 @@ import java.util.Set;
  */
 public class ChangeFileTimeService {
 
-	/** 可识别的图片扩展名, 比较时不区分大小写 */
-	private static final Set<String> IMAGE_EXTENSION_SET = Set.of("jpg", "jpeg", "png");
-
 	/** 严格解析用的格式化器, 必须用 uuuu 才能配合 STRICT 校验 */
 	private static final DateTimeFormatter STRICT_TIME_FORMATTER = DateTimeFormatter
 			.ofPattern("uuuu-MM-dd HH:mm:ss")
@@ -52,6 +46,9 @@ public class ChangeFileTimeService {
 	public static final String TIME_PATTERN_DESC = "yyyy-MM-dd HH:mm:ss";
 
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+	/** 目标文件的收集逻辑, 与陈旧度检查工具共用 */
+	private final ImageFileCollector imageFileCollector = new ImageFileCollector();
 
 	/** true=对齐模式(默认), false=指定模式 */
 	private boolean normalizeToMin = true;
@@ -102,21 +99,7 @@ public class ChangeFileTimeService {
 	 * @return 待处理文件列表
 	 */
 	public List<File> collectTargetFiles(File basePath, List<String> excludeFolderList) {
-		if (null == basePath) {
-			throw new IllegalArgumentException("basePath不能为null");
-		}
-		if (!basePath.exists()) {
-			throw new IllegalArgumentException("basePath不存在: " + basePath.getAbsolutePath());
-		}
-
-		List<File> resultList = new ArrayList<>();
-		if (basePath.isDirectory()) {
-			collectFolderFileList(basePath, excludeFolderList, resultList);
-		} else {
-			// 单文件是显式指定的目标, 不筛选扩展名
-			resultList.add(basePath);
-		}
-		return resultList;
+		return imageFileCollector.collect(basePath, excludeFolderList);
 	}
 
 	/**
@@ -155,8 +138,8 @@ public class ChangeFileTimeService {
 		String detail = buildDetail(file, creationTime, modifiedTime, accessTime, targetTime);
 		String tag = dryRun ? "DRY-RUN" : "CHANGE";
 
-		// 三格都已等于目标时间时跳过, 保证重复执行结果稳定
-		if (creationTime.equals(targetTime) && modifiedTime.equals(targetTime) && accessTime.equals(targetTime)) {
+		// 已对齐判断只看创建时间与修改时间: 访问时间会被外部程序刷新, 让它参与会导致反复重写
+		if (creationTime.equals(targetTime) && modifiedTime.equals(targetTime)) {
 			result.addSkip();
 			logger.info("{} 跳过(已对齐) {}", tag, detail);
 			return;
@@ -178,63 +161,6 @@ public class ChangeFileTimeService {
 		view.setTimes(targetTime, targetTime, targetTime);
 	}
 
-	/**
-	 * 递归收集目录下的图片文件。
-	 */
-	private void collectFolderFileList(File folder, List<String> excludeFolderList, List<File> resultList) {
-		File[] subFileList = folder.listFiles();
-		if (null == subFileList || 0 == subFileList.length) {
-			return;
-		}
-
-		for (File subFile : subFileList) {
-			if (subFile.isDirectory()) {
-				if (isExcludeFolder(subFile, excludeFolderList)) {
-					logger.debug("跳过排除目录, folder={}", subFile.getAbsolutePath());
-					continue;
-				}
-				collectFolderFileList(subFile, excludeFolderList, resultList);
-				continue;
-			}
-			if (isImageFile(subFile)) {
-				resultList.add(subFile);
-			}
-		}
-	}
-
-	/**
-	 * 判断是否是需要跳过的子目录。
-	 */
-	private boolean isExcludeFolder(File folder, List<String> excludeFolderList) {
-		if (null == excludeFolderList) {
-			return false;
-		}
-		for (String excludeFolder : excludeFolderList) {
-			if (excludeFolder.equals(folder.getName())) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * 按扩展名判断是否为需要处理的图片, 不区分大小写。
-	 */
-	private boolean isImageFile(File file) {
-		return IMAGE_EXTENSION_SET.contains(getExtension(file.getName()));
-	}
-
-	/**
-	 * 取文件名的扩展名, 没有扩展名时返回空串。<br>
-	 * 用"最后一个点"判断, 因此 {@code a.jpg.bak} 的扩展名是 {@code bak}, 不会被当成图片。
-	 */
-	private static String getExtension(String fileName) {
-		int index = fileName.lastIndexOf('.');
-		if (index <= 0 || index == fileName.length() - 1) {
-			return "";
-		}
-		return fileName.substring(index + 1).toLowerCase(Locale.ROOT);
-	}
 
 	/**
 	 * 取两个时间中较早的一个。

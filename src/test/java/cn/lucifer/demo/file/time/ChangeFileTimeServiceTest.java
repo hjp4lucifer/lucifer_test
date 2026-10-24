@@ -61,16 +61,15 @@ public class ChangeFileTimeServiceTest {
 	@Test
 	public void Yeha_change_time() throws Exception {
 		// 目录或单个文件都可以
-		final String basePath = "M:\\limit\\▌Yeha▌";
+		final String basePath = "M:\\limit\\▌Yeha▌\\Vol.249 yeha (예하) - part 01 Bad delivery guy and new wife size413";
 		// true=只打印"旧值 -> 新值"不落盘; false=真正写入
 		final boolean dryRun = false;
 		// true=取创建时间与修改时间中较早的一个; false=写入下面的 fixedTime
 		final boolean normalizeToMin = true;
-		final String fixedTime = "2019-06-01 04:00:00";
+		final String fixedTime = "2025-08-27 04:00:00";
 		// 目录模式下需要跳过的子目录名, 不需要就传 null
 		final List<String> excludeFolderList = Lists.newArrayList(
-				"Vol.169 Aram",
-				"Vol.229 Yeha"
+				"Vol.169 Aram"
 		);
 
 		File target = new File(basePath);
@@ -244,12 +243,13 @@ public class ChangeFileTimeServiceTest {
 		assertTrue(third.createNewFile());
 		setThreeTimes(first, "2020-01-02 03:04:05", "2019-06-01 04:00:00", "2021-01-01 00:00:00");
 		setThreeTimes(second, "2019-06-01 04:00:00", "2020-01-02 03:04:05", "2021-01-01 00:00:00");
+		// 创建与修改本来就一致, 第一轮就该被跳过
 		setThreeTimes(third, "2018-05-05 05:05:05", "2018-05-05 05:05:05", "2021-01-01 00:00:00");
 
 		service.setDryRun(false);
 		ChangeTimeResult firstResult = service.handleBasePath(folder, null);
-		assertEquals(3, firstResult.getSuccessCount());
-		assertEquals(0, firstResult.getSkipCount());
+		assertEquals("只有前两个需要修正", 2, firstResult.getSuccessCount());
+		assertEquals("第三个创建与修改已一致, 应当跳过", 1, firstResult.getSkipCount());
 		BasicFileAttributes afterFirstRun = read(first);
 
 		ChangeTimeResult secondResult = service.handleBasePath(folder, null);
@@ -257,6 +257,21 @@ public class ChangeFileTimeServiceTest {
 		assertEquals("第二次应当全部跳过", 3, secondResult.getSkipCount());
 		assertEquals(0, secondResult.getFailCount());
 		assertSameTimes(afterFirstRun, read(first));
+	}
+
+	@Test
+	public void skip_when_creation_equals_modified_even_if_access_time_differs() throws Exception {
+		File file = temporaryFolder.newFile("aligned.jpg");
+		// 真实场景: 创建与修改已一致, 访问时间被缩略图生成刷成了当晚
+		setThreeTimes(file, "2026-10-24 14:03:51", "2026-10-24 14:03:51", "2026-10-24 21:57:01");
+		BasicFileAttributes before = read(file);
+
+		service.setDryRun(false);
+		ChangeTimeResult result = service.handleBasePath(file, null);
+
+		assertEquals("创建与修改已对齐, 应当跳过", 1, result.getSkipCount());
+		assertEquals("不应产生写入", 0, result.getSuccessCount());
+		assertSameTimes(before, read(file));
 	}
 
 	// ------------------------------------------------------------------ 试运行与失败汇总
