@@ -15,3 +15,5 @@ hs_err_pid*
 /lcf/
 /src/test/resources/cookie/
 /src/test/resources/javabot3/
+javbot3_cookie.txt
+openspec/
