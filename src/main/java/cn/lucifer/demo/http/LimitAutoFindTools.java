@@ -27,15 +27,28 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+/**
+ * 磁力猫 + jayBot 批量比对工具：抓取磁力站结果，与本地已有资源（limit_*.txt 索引）比对并输出报告。
+ * <p>
+ * 本地索引文件固定放在 {@link #folder} 下，文件名由模板 + loadFileDate 拼成，如 limit_girl_20260419.txt：
+ * <ul>
+ * <li>limit_girl_xxx.txt：行格式 key[\t]fileSizeGB[\t]parentName 或 key[\t]parentName（key 为女优名，parentName 为等级）</li>
+ * <li>limit_mp4_xxx.txt：行格式 key[\t]fileSizeGB[\t]parentName 或 key[\t]parentName（key 为 mp4 文件名）</li>
+ * </ul>
+ */
 public class LimitAutoFindTools {
 
 	private static final Logger logger = LoggerFactory.getLogger(LimitAutoFindTools.class);
 
 	final File folder = new File("M:\\limit\\aaa");
 
+	/** 起始页，从 1 开始 */
 	private final int startPage;
+	/** 起始番号（已去掉前后缀），空则从 startPage 的第一条开始；非空则快进到该番号 */
 	private final String startVideo;
+	/** 索引文件名中的日期，如 "20260419" → limit_girl_20260419.txt */
 	private final String loadFileDate;
+	/** 结果输出目录 */
 	private final File resultFolder;
 	private BasicCookieStore jayBotCookieStore;
 
@@ -46,17 +59,33 @@ public class LimitAutoFindTools {
 		this.resultFolder = resultFolder;
 	}
 
+	/**
+	 * @param startPage      起始页，从 1 开始
+	 * @param startVideo     起始番号，空则从 startPage 第一条开始
+	 * @param javbot3Cookie  jayBot 站点（{@link JayBot#COOKIE_DOMAIN}）的完整 cookie 串（旧版需含 csrf_cookie）
+	 * @param loadFileDate   索引文件名中的日期，如 "20260419"
+	 * @param resultFolder   结果输出目录
+	 */
 	public LimitAutoFindTools(int startPage, String startVideo, String javbot3Cookie, String loadFileDate, File resultFolder) {
 		this(startPage, startVideo, loadFileDate, resultFolder);
 		BasicCookieStore cookieStore = CookiesUtils.getCookieStore(JayBot.COOKIE_DOMAIN, javbot3Cookie);
-		String javbot3CookieToken = CookiesUtils.getByName(cookieStore, "csrf_cookie");
-		if (null == javbot3CookieToken) {
-			throw new IllegalArgumentException("javbot3_cookie_token is null");
-		}
+		// 新版站点已不需要 csrf_cookie，原校验保留以便回滚
+		//String javbot3CookieToken = CookiesUtils.getByName(cookieStore, "csrf_cookie");
+		//if (null == javbot3CookieToken) {
+		//	throw new IllegalArgumentException("javbot3_cookie_token is null");
+		//}
 		this.jayBotCookieStore = cookieStore;
 	}
 
 
+	/**
+	 * 按磁力站最新列表逐页比对（结果输出 txt）。
+	 *
+	 * @param searchTypeEnum 搜索类型，决定番号前后缀、转 mp4 后缀，如 {@link CilimaoSearchTypeEnum#base64}
+	 * @param loadEndTime    结束时间，等于磁力站列表的创建时间（如 "2026-04-19"）即停止
+	 * @param maxPage        最大翻页数
+	 * @param oldFile        上一次的结果文件，内容会合并进本次输出；可为 null
+	 */
 	public void autoFind(CilimaoSearchTypeEnum searchTypeEnum, String loadEndTime,
 						 int maxPage, File oldFile) throws Exception {
 		final Map<String, LoadFileInfo> limitGirlMap = loadFile("limit_girl_{}.txt");
@@ -153,6 +182,12 @@ public class LimitAutoFindTools {
 		FileUtils.writeLines(new File(resultFolder, outFn), "utf-8", outLineList);
 	}
 
+	/**
+	 * 按演员抓取其全部作品，再逐个番号去磁力站搜索（结果输出 htm）。
+	 *
+	 * @param actorCode 演员在 jayBot 的编号，即 /actor/{actorCode} 路径段
+	 * @param maxPage   演员作品列表与磁力搜索各自的最大翻页数
+	 */
 	public void autoFindByAuthor(String actorCode,
 								 int maxPage) throws Exception {
 		// 加载本地已有的mp4索引
@@ -429,6 +464,12 @@ public class LimitAutoFindTools {
 		FileUtils.writeLines(new File(resultFolder, outFn), "utf-8", outLineList);
 	}
 
+	/**
+	 * 加载 folder 下的索引文件。
+	 *
+	 * @param loadFileTemplate 带 {} 占位符的文件名模板，如 "limit_mp4_{}.txt"，占位符会被 loadFileDate 填充
+	 * @return key → LoadFileInfo（parentName 为等级，fileSizeGB 可能为 null）
+	 */
 	protected Map<String, LoadFileInfo> loadFile(String loadFileTemplate) throws Exception {
 		// 使用日期变量替换模板中的占位符，生成实际文件名
 		String fileName = StrUtils.generateMessage(loadFileTemplate, loadFileDate);

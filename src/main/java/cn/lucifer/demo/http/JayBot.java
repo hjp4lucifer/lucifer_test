@@ -28,9 +28,15 @@ import java.util.Map;
  * jayBot
  */
 public class JayBot {
-	public static final String COOKIE_DOMAIN = "45.151.132.44";
+	/**
+	 * cookie 域名，必须与 BASE_URL 的 host 完全一致（不含协议和端口），否则 cookie 不会带上
+	 */
+	public static final String COOKIE_DOMAIN = "ja02.vip";
 
-	private static final String BASE_URL = "https://45.151.132.44:2006";
+	/**
+	 * jayBot 站点地址，换域名/IP 只改这里（含端口）
+	 */
+	private static final String BASE_URL = "https://ja02.vip";
 
 	private static final String URL_TEMPLATE = "/search?wd=";
 
@@ -47,11 +53,14 @@ public class JayBot {
 
 	public JayBot(BasicCookieStore cookieStore) {
 		this.cookieStore = cookieStore;
-		String javbot3CookieToken = CookiesUtils.getByName(cookieStore, "csrf_cookie");
-		if(null == javbot3CookieToken){
-			throw new IllegalArgumentException("javbot3_cookie_token is null");
-		}
-		this.cookieToken = javbot3CookieToken;
+		// 新版站点不再校验 csrf，cookie 名改为 ci_csrf_token，且该 cookie 已不存在（实际请求发送 ci_csrf_token=&page=2），
+		// 故取不到时给空串，避免 cookieToken 为 null 导致分页 POST 出错；原校验保留以便回滚
+		//String javbot3CookieToken = CookiesUtils.getByName(cookieStore, "csrf_cookie");
+		//if(null == javbot3CookieToken){
+		//	throw new IllegalArgumentException("javbot3_cookie_token is null");
+		//}
+		//this.cookieToken = javbot3CookieToken;
+		this.cookieToken = StringUtils.defaultString(CookiesUtils.getByName(cookieStore, "ci_csrf_token"));
 	}
 
 	public List<String> search(String keyword) throws IOException, HttpClientException {
@@ -135,7 +144,8 @@ public class JayBot {
 
 			result.nextPage = 1;
 		} else {
-			NameValuePair[] parametersBody = {new NameValuePair("stb_csrf_token", cookieToken), new NameValuePair("page", String.valueOf(page))};
+			// 新版参数名由 stb_csrf_token 改为 ci_csrf_token，值通常为空串
+			NameValuePair[] parametersBody = {new NameValuePair("ci_csrf_token", cookieToken), new NameValuePair("page", String.valueOf(page))};
 
 			Map<String, String> header = new HashMap<>();
 			header.put("referer", url);
