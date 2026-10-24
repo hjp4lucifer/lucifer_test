@@ -11,6 +11,7 @@ import cn.lucifer.util.StrUtils;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.text.StrBuilder;
@@ -39,6 +40,9 @@ import java.util.*;
 public class LimitAutoFindTools {
 
 	private static final Logger logger = LoggerFactory.getLogger(LimitAutoFindTools.class);
+
+	/** 文件名中可忽略的修饰后缀（不含扩展名），比较时视为同一文件，如 "abc_no_mark.mp4" 等同 "abc.mp4" */
+	private static final Set<String> IGNORED_MP4_MARKERS = Sets.newHashSet("_nice", "_no_mark", "_not_mark");
 
 	final File folder = new File("M:\\limit\\aaa");
 
@@ -241,6 +245,11 @@ public class LimitAutoFindTools {
 			for (File mp4File : mp4FileArray) {
 				String name = mp4File.getName();
 				limitMp4Map.put(name, new LoadFileInfo("unknowns", null));
+				// 去掉修饰后缀的文件名也注册一份，便于与不带后缀的磁力标题比对
+				String nameWithoutMarker = removeIgnoredMarkers(name);
+				if (!nameWithoutMarker.equals(name)) {
+					limitMp4Map.putIfAbsent(nameWithoutMarker, new LoadFileInfo("unknowns", null));
+				}
 			}
 		}
 		return limitMp4Map;
@@ -379,7 +388,7 @@ public class LimitAutoFindTools {
 		StrBuilder outLine = new StrBuilder();
 		String linkedTitle = linkedInfo.name;
 
-		// 检查本地是否已存在该资源
+		// 检查本地是否已存在该资源；修饰后缀已在加载时注册成2份key，网页标题保持原样比对
 		boolean exists = false;
 		LoadFileInfo matchedInfo = null;
 		if (limitMp4Map.containsKey(linkedTitle)) {
@@ -465,6 +474,22 @@ public class LimitAutoFindTools {
 	}
 
 	/**
+	 * 去掉文件名中可忽略的修饰后缀，如 "abc_no_mark.mp4" → "abc.mp4"、"abc_not_mark" → "abc"。
+	 * 后缀位于结尾或紧跟 .mp4 都能识别；不含修饰后缀时原样返回。
+	 */
+	private String removeIgnoredMarkers(String fileName) {
+		if (StringUtils.isBlank(fileName)) {
+			return fileName;
+		}
+		for (String marker : IGNORED_MP4_MARKERS) {
+			if (fileName.contains(marker)) {
+				fileName = StringUtils.replace(fileName, marker, StringUtils.EMPTY);
+			}
+		}
+		return fileName;
+	}
+
+	/**
 	 * 加载 folder 下的索引文件。
 	 *
 	 * @param loadFileTemplate 带 {} 占位符的文件名模板，如 "limit_mp4_{}.txt"，占位符会被 loadFileDate 填充
@@ -498,10 +523,10 @@ public class LimitAutoFindTools {
 			}
 			putMap(limitMap, key, new LoadFileInfo(parentName, fileSizeGB));
 
-			// 若key以"_nice.mp4"结尾，仅移除"_nice"后也作为key建立映射（保留.mp4）
-			if (key.endsWith("_nice.mp4")) {
-				String keyWithoutNice = StringUtils.removeEnd(key, "_nice.mp4") + ".mp4";
-				putMap(limitMap, keyWithoutNice, new LoadFileInfo(parentName, fileSizeGB));
+			// 去掉 _nice/_no_mark/_not_mark 等修饰后缀后也作为key建立映射，如 xxx_no_mark.mp4 → xxx.mp4
+			String keyWithoutMarker = removeIgnoredMarkers(key);
+			if (!keyWithoutMarker.equals(key)) {
+				putMap(limitMap, keyWithoutMarker, new LoadFileInfo(parentName, fileSizeGB));
 			}
 
 			// 多名字识别
