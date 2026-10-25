@@ -42,7 +42,7 @@ public class LimitAutoFindTools {
 	private static final Logger logger = LoggerFactory.getLogger(LimitAutoFindTools.class);
 
 	/** 文件名中可忽略的修饰后缀（不含扩展名），比较时视为同一文件，如 "abc_no_mark.mp4" 等同 "abc.mp4"；同时决定展示顺序 */
-	private static final List<String> IGNORED_MP4_MARKERS = Lists.newArrayList("_nice", "_no_mark", "_not_mark");
+	private static final List<String> IGNORED_MP4_MARKERS = Lists.newArrayList("_nice", "_no_mark", "_not_mark", "_ad", "_nice_no_mark");
 
 	/** 索引里黑名单条目的标记值 */
 	private static final String BLACKLIST = "blacklist";
