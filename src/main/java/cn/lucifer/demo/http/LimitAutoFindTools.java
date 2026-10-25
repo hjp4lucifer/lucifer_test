@@ -9,6 +9,7 @@ import cn.lucifer.http.HttpClientException;
 import cn.lucifer.util.CookiesUtils;
 import cn.lucifer.util.StrUtils;
 import com.alibaba.fastjson.JSON;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -41,14 +42,23 @@ public class LimitAutoFindTools {
 
 	private static final Logger logger = LoggerFactory.getLogger(LimitAutoFindTools.class);
 
-	/** 文件名中可忽略的修饰后缀（不含扩展名），比较时视为同一文件，如 "abc_no_mark.mp4" 等同 "abc.mp4"；同时决定展示顺序 */
-	private static final List<String> IGNORED_MP4_MARKERS = Lists.newArrayList("_nice", "_no_mark", "_not_mark", "_ad", "_nice_no_mark");
+	/**
+	 * 文件名末尾可忽略的修饰后缀（不含扩展名），比较时视为同一文件，如 "abc_no_mark.mp4" 等同 "abc.mp4"。
+	 * 按长度倒序，保证末尾匹配时组合标记（_nice_no_mark）先于被它包含的短标记命中；该顺序同时决定多标记的展示顺序
+	 */
+	private static final ImmutableList<String> IGNORED_MP4_MARKERS = buildIgnoredMarkers();
+
+	private static ImmutableList<String> buildIgnoredMarkers() {
+		List<String> markers = Lists.newArrayList("_nice", "_no_mark", "_not_mark", "_ad", "_nice_no_mark");
+		markers.sort(Comparator.comparingInt(String::length).reversed());
+		return ImmutableList.copyOf(markers);
+	}
 
 	/** 索引里黑名单条目的标记值 */
 	private static final String BLACKLIST = "blacklist";
 
 	/** 大小确认的默认容差（GB）：条目没有配置容差时使用，两侧差值不超过它视为同一份资源 */
-	private static final double SIZE_TOLERANCE_GB = 0.1;
+	private static final double SIZE_TOLERANCE_GB = 0.15;
 
 	/**
 	 * 参与后缀转换的搜索类型：必须同时配置后缀、转 mp4 后缀与大小容差。
@@ -307,7 +317,8 @@ public class LimitAutoFindTools {
 	private void attachSizeTolerance(Map<String, LoadFileInfo> limitMp4Map) {
 		int count = 0;
 		for (Map.Entry<String, LoadFileInfo> entry : limitMp4Map.entrySet()) {
-			Double tolerance = findSizeTolerance(entry.getKey());
+			// 先去掉末尾标记再判断，保证 xxx-uncensored-nyap2p.com_no_mark.mp4 也能拿到对应类型的容差
+			Double tolerance = findSizeTolerance(removeIgnoredMarkers(entry.getKey()));
 			if (null != tolerance) {
 				entry.getValue().sizeTolerance = tolerance;
 				count++;
@@ -668,39 +679,70 @@ public class LimitAutoFindTools {
 	}
 
 	/**
-	 * 去掉文件名中可忽略的修饰后缀，如 "abc_no_mark.mp4" → "abc.mp4"、"abc_not_mark" → "abc"。
-	 * 后缀位于结尾或紧跟 .mp4 都能识别；不含修饰后缀时原样返回。
+	 * 去掉文件名末尾的修饰标记，如 "abc_no_mark.mp4" → "abc.mp4"、"abc_not_mark" → "abc"。
+	 * 只认紧邻扩展名之前（或文件名结尾）的标记，多个标记可叠加；不含修饰标记时原样返回。
 	 */
-	private String removeIgnoredMarkers(String fileName) {
+	protected String removeIgnoredMarkers(String fileName) {
 		if (StringUtils.isBlank(fileName)) {
 			return fileName;
 		}
-		for (String marker : IGNORED_MP4_MARKERS) {
-			if (fileName.contains(marker)) {
-				fileName = StringUtils.replace(fileName, marker, StringUtils.EMPTY);
-			}
-		}
-		return fileName;
+		return stripTrailingMarkers(fileName, null);
 	}
 
 	/**
-	 * 提取文件名中的修饰标记，去掉前导下划线并按固定顺序用 / 拼接，如 "abc_nice_no_mark.mp4" → "nice/no_mark"；
+	 * 提取文件名末尾的修饰标记，去掉前导下划线并按固定顺序用 / 拼接，如 "abc_nice_no_mark.mp4" → "nice/no_mark"；
 	 * 不含修饰标记时返回 null
 	 */
-	private String extractMarks(String fileName) {
+	protected String extractMarks(String fileName) {
 		if (StringUtils.isBlank(fileName)) {
 			return null;
 		}
+		List<String> foundMarks = Lists.newArrayListWithExpectedSize(2);
+		stripTrailingMarkers(fileName, foundMarks);
 		StrBuilder marks = new StrBuilder();
+		// 按标记列表顺序输出，保证多标记时展示稳定
 		for (String marker : IGNORED_MP4_MARKERS) {
-			if (fileName.contains(marker)) {
+			String mark = StringUtils.removeStart(marker, "_");
+			if (foundMarks.contains(mark)) {
 				if (marks.length() > 0) {
 					marks.append('/');
 				}
-				marks.append(StringUtils.removeStart(marker, "_"));
+				marks.append(mark);
 			}
 		}
 		return marks.length() == 0 ? null : marks.toString();
+	}
+
+	/**
+	 * 逐个剥掉文件名末尾的修饰标记（可叠加），标记须紧邻扩展名之前。
+	 * 只处理末尾，避免把名字中间出现的同名子串误当标记删掉；marks 不为 null 时收集识别到的标记
+	 */
+	private String stripTrailingMarkers(String fileName, List<String> marks) {
+		int dotIndex = fileName.lastIndexOf('.');
+		String name = dotIndex > 0 ? fileName.substring(0, dotIndex) : fileName;
+		String extension = dotIndex > 0 ? fileName.substring(dotIndex) : StringUtils.EMPTY;
+
+		String matchedMarker;
+		while (null != (matchedMarker = matchTrailingMarker(name))) {
+			name = StringUtils.removeEnd(name, matchedMarker);
+			if (null != marks) {
+				marks.add(StringUtils.removeStart(matchedMarker, "_"));
+			}
+		}
+		return name + extension;
+	}
+
+	/**
+	 * 返回名字末尾的修饰标记，没有则返回 null。
+	 * 标记列表已按长度倒序，第一个命中的就是最长匹配
+	 */
+	private String matchTrailingMarker(String name) {
+		for (String marker : IGNORED_MP4_MARKERS) {
+			if (name.endsWith(marker)) {
+				return marker;
+			}
+		}
+		return null;
 	}
 
 	/**

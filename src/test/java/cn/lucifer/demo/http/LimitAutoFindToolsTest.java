@@ -116,6 +116,11 @@ public class LimitAutoFindToolsTest {
 
 		LoadFileInfo noSize = new LoadFileInfo("unknowns", null);
 		assertFalse(tools.isSizeConflict(noSize, "5.95 GB"));
+
+		// 默认容差 0.15：4.07 与 3.96 差 0.11 不算冲突，差 0.16 仍算冲突
+		LoadFileInfo fourGB = new LoadFileInfo("小島みなみ", "3.96");
+		assertFalse(tools.isSizeConflict(fourGB, "4.07 GB"));
+		assertTrue(tools.isSizeConflict(fourGB, "4.12 GB"));
 	}
 
 	/**
@@ -133,6 +138,33 @@ public class LimitAutoFindToolsTest {
 		LoadFileInfo byOrigin = tools.findLocalMp4(mp4, "MRHP-004-U_no_mark.mp4", CilimaoSearchTypeEnum.base64);
 		assertNotNull(byOrigin);
 		assertEquals("no_mark", byOrigin.marks);
+	}
+
+	/**
+	 * 校验标记只认文件名末尾：中间出现的同名子串、非常规扩展名都要正确处理
+	 */
+	@Test
+	public void trailingMarkersOnly() throws Exception{
+		LimitAutoFindTools tools = new LimitAutoFindTools(0, null, "20261025", null);
+
+		// 中间出现的 _nice 不算标记，不能被删掉
+		assertEquals("abc_nice_1080.mp4", tools.removeIgnoredMarkers("abc_nice_1080.mp4"));
+		assertNull(tools.extractMarks("abc_nice_1080.mp4"));
+
+		// _ad 只在末尾才生效，abc_add 不会误伤
+		assertEquals("abc.mp4", tools.removeIgnoredMarkers("abc_ad.mp4"));
+		assertEquals("abc_add.mp4", tools.removeIgnoredMarkers("abc_add.mp4"));
+
+		// 非 mp4 扩展名同样能剥掉末尾标记
+		assertEquals("PB-165.avi", tools.removeIgnoredMarkers("PB-165_no_mark.avi"));
+
+		// 组合标记整体识别，不被拆成 _nice + _no_mark
+		assertEquals("SNOS-227-U.mp4", tools.removeIgnoredMarkers("SNOS-227-U_nice_no_mark.mp4"));
+		assertEquals("nice_no_mark", tools.extractMarks("SNOS-227-U_nice_no_mark.mp4"));
+
+		// 叠加的独立标记仍逐个剥掉，展示顺序按标记列表
+		assertEquals("abc.mp4", tools.removeIgnoredMarkers("abc_no_mark_ad.mp4"));
+		assertEquals("no_mark/ad", tools.extractMarks("abc_no_mark_ad.mp4"));
 	}
 
 	/**
