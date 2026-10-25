@@ -44,6 +44,15 @@ public class LimitAutoFindTools {
 	/** 文件名中可忽略的修饰后缀（不含扩展名），比较时视为同一文件，如 "abc_no_mark.mp4" 等同 "abc.mp4" */
 	private static final Set<String> IGNORED_MP4_MARKERS = Sets.newHashSet("_nice", "_no_mark", "_not_mark");
 
+	/** 索引里黑名单条目的标记值 */
+	private static final String BLACKLIST = "blacklist";
+
+	/**
+	 * 黑名单番号集合，加载索引时从文件索引中分离出来。
+	 * 使用大小写不敏感的排序集合，便于 contains 直接做忽略大小写判断
+	 */
+	final Set<String> blacklistVideoNum = Sets.newTreeSet(String.CASE_INSENSITIVE_ORDER);
+
 	final File folder = new File("M:\\limit\\aaa");
 
 	/** 起始页，从 1 开始 */
@@ -144,13 +153,11 @@ public class LimitAutoFindTools {
 				for (JayBotItemInfo videoInfo : videoInfoList) {
 					StrBuilder outLine = new StrBuilder();
 
-					if (limitMp4Map.containsKey(linkedInfo.name)) {
+					// 与 htm 流程一致：候选标题查索引 + 大小门槛
+					LoadFileInfo matchedInfo = findLocalMp4(limitMp4Map, linkedInfo.name, searchTypeEnum);
+					boolean exists = null != matchedInfo && !isSizeConflict(matchedInfo, linkedInfo.fileSize);
+					if (exists) {
 						outLine.append("exists!!!").append('\t');
-					} else if (StringUtils.isNotEmpty(searchTypeEnum.getToMp4Suffix())) {
-						String mp4Name = name + searchTypeEnum.getToMp4Suffix();
-						if (limitMp4Map.containsKey(mp4Name)) {
-							outLine.append("exists!!!").append('\t');
-						}
 					}
 
 					String girlRating = limitGirlMap.containsKey(videoInfo.actress) ? limitGirlMap.get(videoInfo.actress).parentName : null;
@@ -217,6 +224,11 @@ public class LimitAutoFindTools {
 			// 写入视频基本信息（标题行）
 			appendVideoInfoHeader(outLineList, videoInfo);
 
+			// 黑名单番号只做标记，不发起磁力搜索
+			if (appendBlacklistIfNeeded(outLineList, videoInfo)) {
+				continue;
+			}
+
 			outLineList.add("<ul>");
 			htmlStack.push("</ul>");
 
@@ -237,8 +249,10 @@ public class LimitAutoFindTools {
 	/**
 	 * 加载本地mp4索引，并合并当前文件夹下的mp4文件
 	 */
-	private Map<String, LoadFileInfo> loadLimitMp4Map() throws Exception {
+	protected Map<String, LoadFileInfo> loadLimitMp4Map() throws Exception {
 		final Map<String, LoadFileInfo> limitMp4Map = loadFile("limit_mp4_{}.txt");
+		// 把黑名单条目从文件索引中分离出来，避免黑名单番号被误判为“已存在”
+		splitBlacklist(limitMp4Map);
 		// 将当前文件夹下的mp4文件也加入索引（标记为unknowns）
 		File[] mp4FileArray = folder.listFiles(f -> f.getName().endsWith(".mp4"));
 		if (null != mp4FileArray) {
@@ -253,6 +267,44 @@ public class LimitAutoFindTools {
 			}
 		}
 		return limitMp4Map;
+	}
+
+	/**
+	 * 把 parentName 为 blacklist 的条目收进黑名单集合，并从文件索引中移除
+	 */
+	private void splitBlacklist(Map<String, LoadFileInfo> limitMp4Map) {
+		blacklistVideoNum.clear();
+		Iterator<Map.Entry<String, LoadFileInfo>> iterator = limitMp4Map.entrySet().iterator();
+		while (iterator.hasNext()) {
+			Map.Entry<String, LoadFileInfo> entry = iterator.next();
+			if (StringUtils.equalsIgnoreCase(BLACKLIST, entry.getValue().parentName)) {
+				blacklistVideoNum.add(entry.getKey());
+				iterator.remove();
+			}
+		}
+		logger.info("blacklist total={}", blacklistVideoNum.size());
+	}
+
+	/**
+	 * 判断番号是否在黑名单中（原值比较，忽略大小写）
+	 */
+	protected boolean isBlacklist(String videoNum) {
+		if (StringUtils.isBlank(videoNum)) {
+			return false;
+		}
+		return blacklistVideoNum.contains(videoNum);
+	}
+
+	/**
+	 * 命中黑名单时向结果追加一行蓝色标记并返回 true，调用方据此跳过该视频的磁力搜索
+	 */
+	protected boolean appendBlacklistIfNeeded(List<String> outLineList, JayBotItemInfo videoInfo) {
+		if (!isBlacklist(videoInfo.videoNum)) {
+			return false;
+		}
+		logger.info("videoNum={} 命中黑名单，跳过磁力搜索", videoInfo.videoNum);
+		outLineList.add("<div class=\"blue_b\">blacklist</div>");
+		return true;
 	}
 
 	/**
@@ -388,28 +440,9 @@ public class LimitAutoFindTools {
 		StrBuilder outLine = new StrBuilder();
 		String linkedTitle = linkedInfo.name;
 
-		// 检查本地是否已存在该资源；修饰后缀已在加载时注册成2份key，网页标题保持原样比对
-		boolean exists = false;
-		LoadFileInfo matchedInfo = null;
-		if (limitMp4Map.containsKey(linkedTitle)) {
-			exists = true;
-			matchedInfo = limitMp4Map.get(linkedTitle);
-		} else if (linkedTitle.endsWith(CilimaoSearchTypeEnum.uncensored_HD.getSuffix())) {
-			// 无码高清后缀转换
-			String mp4Name = StringUtils.removeEnd(linkedTitle, CilimaoSearchTypeEnum.uncensored_HD.getSuffix());
-			mp4Name += CilimaoSearchTypeEnum.uncensored_HD.getToMp4Suffix();
-			if (limitMp4Map.containsKey(mp4Name)) {
-				exists = true;
-				matchedInfo = limitMp4Map.get(mp4Name);
-			}
-		} else if (StringUtils.isNotEmpty(searchTypeEnum.getToMp4Suffix())) {
-			// 根据搜索类型后缀转换
-			String mp4Name = linkedTitle + searchTypeEnum.getToMp4Suffix();
-			if (limitMp4Map.containsKey(mp4Name)) {
-				exists = true;
-				matchedInfo = limitMp4Map.get(mp4Name);
-			}
-		}
+		// 检查本地是否已存在该资源：候选标题查索引 + 大小门槛（同番号不同版本不算已存在）
+		LoadFileInfo matchedInfo = findLocalMp4(limitMp4Map, linkedTitle, searchTypeEnum);
+		boolean exists = null != matchedInfo && !isSizeConflict(matchedInfo, linkedInfo.fileSize);
 
 		// 已存在的资源标记为红色
 		if (exists) {
@@ -440,21 +473,86 @@ public class LimitAutoFindTools {
 	}
 
 	/**
-	 * 检查文件大小是否与本地记录匹配（仅GB单位参与匹配，差值<0.005视为匹配）
+	 * 生成用于匹配本地索引的候选标题：原样、原样+转mp4后缀、去掉最后一个 @ 之前的内容、去前缀后再加后缀。
+	 * 多重前缀（如 第一會所新片@SIS001@番号）只去掉最后一个 @ 之前的部分
+	 */
+	protected List<String> buildTitleCandidates(String linkedTitle, String toMp4Suffix) {
+		List<String> candidates = Lists.newArrayListWithExpectedSize(4);
+		candidates.add(linkedTitle);
+		if (StringUtils.isNotEmpty(toMp4Suffix)) {
+			candidates.add(linkedTitle + toMp4Suffix);
+		}
+		int atIndex = linkedTitle.lastIndexOf('@');
+		if (atIndex >= 0) {
+			String titleWithoutPrefix = linkedTitle.substring(atIndex + 1);
+			candidates.add(titleWithoutPrefix);
+			if (StringUtils.isNotEmpty(toMp4Suffix)) {
+				candidates.add(titleWithoutPrefix + toMp4Suffix);
+			}
+		}
+		return candidates;
+	}
+
+	/**
+	 * 按候选标题依次查本地索引，命中即返回，全部未命中返回 null
+	 */
+	protected LoadFileInfo findLocalMp4(Map<String, LoadFileInfo> limitMp4Map, String linkedTitle,
+										CilimaoSearchTypeEnum searchTypeEnum) {
+		for (String candidate : buildTitleCandidates(linkedTitle, searchTypeEnum.getToMp4Suffix())) {
+			LoadFileInfo matchedInfo = limitMp4Map.get(candidate);
+			if (null != matchedInfo) {
+				return matchedInfo;
+			}
+		}
+		// 兼容原有规则：无码高清后缀的标题，替换成对应的 mp4 文件名再查一次
+		if (linkedTitle.endsWith(CilimaoSearchTypeEnum.uncensored_HD.getSuffix())) {
+			String mp4Name = StringUtils.removeEnd(linkedTitle, CilimaoSearchTypeEnum.uncensored_HD.getSuffix())
+					+ CilimaoSearchTypeEnum.uncensored_HD.getToMp4Suffix();
+			return limitMp4Map.get(mp4Name);
+		}
+		return null;
+	}
+
+	/**
+	 * 大小是否冲突：两侧都能解析成GB数字且差值大于0.1时，视为不同版本
+	 */
+	protected boolean isSizeConflict(LoadFileInfo matchedInfo, String linkedFileSize) {
+		Double storedGB = parseGB(matchedInfo.fileSizeGB);
+		Double linkedGB = parseGB(linkedFileSize);
+		if (null == storedGB || null == linkedGB) {
+			return false;
+		}
+		return Math.abs(storedGB - linkedGB) > 0.1;
+	}
+
+	/**
+	 * 解析GB数值：索引里存的是 "5.93"，网页上是 "5.94 GB"；无法解析（如 "850 MB"）返回 null
+	 */
+	private Double parseGB(String fileSize) {
+		if (null == fileSize) {
+			return null;
+		}
+		String number = StringUtils.removeEnd(fileSize.trim(), " GB");
+		try {
+			return Double.valueOf(number);
+		} catch (NumberFormatException e) {
+			return null;
+		}
+	}
+
+	/**
+	 * 检查文件大小是否与本地记录匹配（两侧都解析成GB且差值不超过0.1视为匹配）
 	 */
 	private boolean checkFileSizeMatched(boolean exists, LoadFileInfo matchedInfo, String linkedFileSize) {
-		if (!exists || matchedInfo == null || matchedInfo.fileSizeGB == null
-				|| linkedFileSize == null || !linkedFileSize.endsWith(" GB")) {
+		if (!exists || null == matchedInfo) {
 			return false;
 		}
-		String linkedFileSizeNum = StringUtils.removeEnd(linkedFileSize, " GB");
-		try {
-			double linkedGB = Double.parseDouble(linkedFileSizeNum);
-			double storedGB = Double.parseDouble(matchedInfo.fileSizeGB);
-			return Math.abs(linkedGB - storedGB) <= 0.1;
-		} catch (NumberFormatException e) {
+		Double storedGB = parseGB(matchedInfo.fileSizeGB);
+		Double linkedGB = parseGB(linkedFileSize);
+		if (null == storedGB || null == linkedGB) {
 			return false;
 		}
+		return Math.abs(storedGB - linkedGB) <= 0.1;
 	}
 
 	/**
